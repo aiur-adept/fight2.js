@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fight Page</title>
+    <!-- React and ReactDOM from CDN -->
+    <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+    <script type="text/babel">
+        const { useEffect, useState } = React;
+
+        // WebSocket connection setup
+        const ws = new WebSocket('ws://localhost:3000');
+
+        function App() {
+            const [message, setMessage] = useState('');
+
+            useEffect(() => {
+                ws.onopen = () => {
+                    console.log('WebSocket Connected');
+                    // ws.send('Hello Server!'); // Example send message
+                };
+
+                ws.onmessage = (event) => {
+                    console.log('Message from server ', event.data);
+                    setMessage(event.data);
+                };
+
+                ws.onerror = (error) => {
+                    console.log('WebSocket Error ', error);
+                };
+
+                // Cleanup on component unmount
+                return () => ws.close();
+            }, []);
+
+            return (
+                <div>
+                    <h1>Fight Page</h1>
+                    <p>WebSocket Message: {message}</p>
+                    {/* Further components and logic go here */}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('app'));
+    </script>
+</body>
+</html>

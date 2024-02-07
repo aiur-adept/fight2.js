@@ -21,3 +21,5 @@ app.get('/fight/create', (req, res) => {
 app.listen(PORT, () => {
   console.log(`HTTP Server running on port ${PORT}`);
 });
+
+export default app;
