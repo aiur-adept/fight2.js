@@ -1,0 +1,48 @@
+import { io } from './ws.js';
+import { getFightData } from './db.js';
+
+async function sendFightData(fightId) {
+    const fightData = await getFightData(fightId);
+    console.log(`sending ${JSON.stringify(fightData)}`);
+    const response = { 
+        type: 'fight/data', 
+        fightData: JSON.stringify(fightData)
+    };
+    io.to(fightId).emit('message', JSON.stringify(response));
+}
+
+async function join(socket, msg) {
+    try {
+        const { fightId } = msg;
+        socket.join(fightId);
+        console.log(`User ${socket.id} joined room: ${fightId}`);
+
+        // Check the room size after joining
+        const roomSize = io.sockets.adapter.rooms.get(fightId)?.size || 0;
+        console.log(`Room ${fightId} size: ${roomSize}`);
+
+        // If two users are in the room, start the fight
+        if (roomSize === 2) {
+            io.to(fightId).emit('message', JSON.stringify({ event: 'fight/begin' }));
+            console.log(`Fight started in room: ${fightId}`);
+            await sendFightData(fightId);
+        }
+    } catch (error) {
+        console.log(`Error parsing join data from ${socket.id}:`, error);
+    }
+}
+
+function handleMessage(socket, msg) {
+    console.log(`handleMessage [${msg.type}]`);
+    switch(msg.type) {
+        case "fight/join":
+            join(socket, msg);
+            break;
+        default:
+            console.error(`unknown message: ${JSON.stringify(msg)}`);
+    }
+}
+
+export {
+    handleMessage,
+};

@@ -9,7 +9,7 @@
     "start": "node server/server.js",
     "build": "webpack --mode production",
     "watchClient": "nodemon --watch src --ext js,jsx,css,html --exec 'npm run build'",
-    "watcherver": "nodemon --watch server --ext js --signal SIGUSR2 --exec 'npm run start'",
+    "watchServer": "nodemon --watch server --ext js --signal SIGUSR2 --exec 'npm run start'",
     "devserver": "concurrently \"npm run watchServer\" \"npm run watchClient\""
   },
   "author": "",

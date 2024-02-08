@@ -107,26 +107,27 @@ function Fight() {
       const websocket = io(`${window.location.protocol}//${window.location.host}`);
       setWs(websocket);
 
-      websocket.addEventListener('open', () => {
+      websocket.on('connect', () => {
         console.log('joining fight...');
         websocket.send(JSON.stringify({ type: 'fight/join', username, fightId: uuid }));
       });
 
-      websocket.addEventListener('close', () => {
+      websocket.on('disconnect', () => {
         if (!fightEnded) {
           setError('Disconnected');
         }
       });
 
-      websocket.addEventListener('message', (event) => {
-        const data = JSON.parse(event.data);
-        switch(data.type) {
-          case 'fight/start':
-            // TODO: do something here
+      websocket.on('message', (msg) => {
+        console.log(msg);
+        const data = JSON.parse(msg);
+        console.log(data);
+        switch(data.event) {
+          case 'fight/begin':
+            console.log('FIGHT BEGINS');
             break;
-
           case 'fight/data':
-            setFightData(data.fightData);
+            setFightData(JSON.parse(data.fightData));
             break;
           case 'fight/output':
             writeToOutput(data.message.content, data.message.className);

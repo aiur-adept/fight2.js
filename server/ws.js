@@ -1,66 +1,62 @@
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
+import { client, getFightData } from './db.js';
+import { handleMessage } from './handle-message.js'
+
 
 const port = process.env.PORT || 8080;
 
+let io;
+
 function setupSocketIO(server) {
-
-    const io = new Server(server);
-
+    io = new Server(server);
     const pubClient = createClient({ url: "redis://localhost:6379" });
     const subClient = pubClient.duplicate();
 
     Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
-    io.adapter(createAdapter(pubClient, subClient));
+        io.adapter(createAdapter(pubClient, subClient));
 
-    io.on('connection', (socket) => {
-        console.log('A user connected:', socket.id);
+        io.on('connection', (socket) => {
+            console.log('A user connected:', socket.id);
+        
+            // Handling messages. Assuming messages include the UUID.
+            socket.on('message', (data) => {
+                try {
+                    const message = JSON.parse(data); // Assuming data is a JSON string
+                    const { fightId } = message;
+                    console.log(`Message received for room ${fightId} from ${socket.id}`);
+                    handleMessage(socket, message);
+                } catch (error) {
+                    console.log(`Error parsing message data from ${socket.id}:`, error);
+                }
+            });
 
-        // Handling "join" message to subscribe to a UUID
-        socket.on('join', (data) => {
-        try {
-            const { uuid } = JSON.parse(data); // Assuming data is a JSON string
-            socket.join(uuid);
-            console.log(`User ${socket.id} joined room: ${uuid}`);
+            socket.on('disconnect', async () => {
+                console.log(`User disconnected: ${socket.id}`);
+                // Retrieve all rooms (fights) the socket is currently in
+                const rooms = Array.from(socket.rooms);
+                rooms.forEach(async (uuid) => {
+                    // Skip the socket's own ID, which is also listed in rooms
+                    if (uuid === socket.id) return;
 
-            // Check the room size after joining
-            const roomSize = io.sockets.adapter.rooms.get(uuid)?.size || 0;
-            console.log(`Room ${uuid} size: ${roomSize}`);
+                    const roomSize = io.sockets.adapter.rooms.get(uuid)?.size || 0;
+                    console.log(`Room ${uuid} size after disconnect: ${roomSize}`);
 
-            // If two users are in the room, start the fight
-            if (roomSize === 2) {
-            io.to(uuid).emit('message', JSON.stringify({ event: 'fight/begin' }));
-            console.log(`Fight started in room: ${uuid}`);
-            }
-        } catch (error) {
-            console.log(`Error parsing join data from ${socket.id}:`, error);
-        }
+                    // If the room is empty after the user disconnects, delete the fight data
+                    if (roomSize === 0) {
+                        console.log(`Deleting fight data for empty room: ${uuid}`);
+                        await client.del(uuid);
+                    }
+                });
+            });
         });
 
-        // Handling messages. Assuming messages include the UUID.
-        socket.on('message', (data) => {
-        try {
-            const message = JSON.parse(data); // Assuming data is a JSON string
-            const { uuid } = message;
-            if (uuid) {
-            console.log(`Message received for room ${uuid} from ${socket.id}: ${data}`);
-            // Emitting message to all clients in the room (UUID)
-            io.to(uuid).emit('message', data);
-            }
-        } catch (error) {
-            console.log(`Error parsing message data from ${socket.id}:`, error);
-        }
-        });
-
-        // Log when a user disconnects
-        socket.on('disconnect', () => {
-        console.log(`User disconnected: ${socket.id}`);
-        });
-    });
-
-    console.log(`socket.io listening on port ${port}`);
+        console.log(`socket.io listening on port ${port}`);
     });
 }
 
-export default setupSocketIO;
+export {
+    io,
+    setupSocketIO,
+};

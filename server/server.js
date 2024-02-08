@@ -6,7 +6,7 @@ import { dirname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 import apiRouter from './api.js';
-import setupSocketIO from './ws.js';
+import { setupSocketIO } from './ws.js';
 
 // Deriving __dirname and __filename in ES module scope
 const __filename = fileURLToPath(import.meta.url);
@@ -28,14 +28,8 @@ app.use(express.static(path.join(__dirname, '..', 'dist')));
 // Using the API router
 app.use('/api', apiRouter);
 
-// Fallback to serve the index.html for SPA routing
-app.get('/fight/:uuid', (req, res) => {
-  console.log('here');
-  res.sendFile(path.join(__dirname, '..', 'public', 'fight.html'));
-});
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
 });
 
 // Start the server
