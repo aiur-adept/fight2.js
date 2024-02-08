@@ -1,22 +1,29 @@
 import express from 'express';
 import * as http from 'http';
 import path from 'path';
-import apiRouter from './api.js'; // Ensure this is correctly pointing to your API module
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
+
+import apiRouter from './api.js';
+import setupSocketIO from './ws.js';
 
 // Deriving __dirname and __filename in ES module scope
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const port = process.env.PORT || 8080;
+
 const app = express();
 const server = http.createServer(app);
 
-const port = process.env.PORT || 8080;
+//
+// Socket.io
+//
+setupSocketIO(server);
 
 // Serving static files from 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '..', 'dist')));
 
 // Using the API router
 app.use('/api', apiRouter);
