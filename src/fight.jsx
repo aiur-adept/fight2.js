@@ -121,13 +121,16 @@ function Fight() {
       websocket.on('message', (msg) => {
         console.log(msg);
         const data = JSON.parse(msg);
-        console.log(data);
+        console.log(data.event);
         switch(data.event) {
           case 'fight/begin':
             console.log('FIGHT BEGINS');
             break;
           case 'fight/data':
-            setFightData(JSON.parse(data.fightData));
+            console.log('fight data:');
+            const fightData = JSON.parse(data.fightData);
+            console.log(fightData);
+            setFightData(fightData);
             break;
           case 'fight/output':
             writeToOutput(data.message.content, data.message.className);

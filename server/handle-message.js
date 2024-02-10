@@ -1,11 +1,11 @@
 import { io } from './ws.js';
-import { getFightData } from './db.js';
+import { getFightData, setFightData } from './db.js';
 
 async function sendFightData(fightId) {
     const fightData = await getFightData(fightId);
     console.log(`sending ${JSON.stringify(fightData)}`);
     const response = { 
-        type: 'fight/data', 
+        event: 'fight/data', 
         fightData: JSON.stringify(fightData)
     };
     io.to(fightId).emit('message', JSON.stringify(response));
@@ -13,9 +13,20 @@ async function sendFightData(fightId) {
 
 async function join(socket, msg) {
     try {
+        console.log('[[join]]');
+        console.log(msg);
         const { fightId } = msg;
         socket.join(fightId);
-        console.log(`User ${socket.id} joined room: ${fightId}`);
+        console.log(`User ${socket.id} as ${msg.username} joined room: ${fightId}`);
+
+        // set the user's fight stats (health, acuity, etc.)
+        const fightData = await getFightData(fightId);
+        fightData.states[msg.username] = {
+            health: 20,
+            acuity: 100,
+            submissionProgress: 0,
+        };
+        await setFightData(fightId, fightData);
 
         // Check the room size after joining
         const roomSize = io.sockets.adapter.rooms.get(fightId)?.size || 0;
