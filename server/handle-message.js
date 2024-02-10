@@ -4,11 +4,27 @@ import { getFightData, setFightData } from './db.js';
 async function sendFightData(fightId) {
     const fightData = await getFightData(fightId);
     console.log(`sending ${JSON.stringify(fightData)}`);
-    const response = { 
-        event: 'fight/data', 
+    const response = {
+        event: 'fight/data',
         fightData: JSON.stringify(fightData)
     };
     io.to(fightId).emit('message', JSON.stringify(response));
+}
+
+
+
+async function startFight(fightData) {
+    fightData.status = 'in-progress';
+    await setFightData(fightData.id, fightData);
+    for (const name of fightData.names) {
+        io.to(fightData.id).emit('message', JSON.stringify({ type: 'fight/start' }));
+    }
+}
+
+async function startRound(fightData) {
+    for (const name of fightData.names) {
+        io.to(fightData.id).emit(JSON.stringify({ type: 'fight/roundStart', fightData: fightData }));
+    }
 }
 
 async function join(socket, msg) {
@@ -38,6 +54,8 @@ async function join(socket, msg) {
             io.to(fightId).emit('message', JSON.stringify({ event: 'fight/begin' }));
             console.log(`Fight started in room: ${fightId}`);
             await sendFightData(fightId);
+            await startFight(fightData);
+            await startRound(fightData);
         }
     } catch (error) {
         console.log(`Error parsing join data from ${socket.id}:`, error);
@@ -46,7 +64,7 @@ async function join(socket, msg) {
 
 function handleMessage(socket, msg) {
     console.log(`handleMessage [${msg.type}]`);
-    switch(msg.type) {
+    switch (msg.type) {
         case "fight/join":
             join(socket, msg);
             break;
