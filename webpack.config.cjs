@@ -8,9 +8,11 @@ const path = require('path');
 module.exports = {
   mode: 'development',
   entry: './src/index.jsx',
+  devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
+    chunkFilename: '[name].bundle.js',
     publicPath: '/'
   },
   resolve: {
@@ -27,6 +29,11 @@ module.exports = {
             presets: ['@babel/preset-env', '@babel/preset-react'],
           },
         },
+      },
+      {
+        test: /\.js$/,
+        enforce: 'pre',
+        use: ['source-map-loader'],
       },
     ],
   },

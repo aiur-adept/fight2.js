@@ -19,13 +19,14 @@ async function join(socket, msg) {
         socket.join(fightId);
         console.log(`User ${socket.id} as ${msg.username} joined room: ${fightId}`);
 
-        // set the user's fight stats (health, acuity, etc.)
+        // set the user's fight stats (health, acuity, etc.) and username
         const fightData = await getFightData(fightId);
         fightData.states[msg.username] = {
             health: 20,
             acuity: 100,
             submissionProgress: 0,
         };
+        fightData.names.push(msg.username);
         await setFightData(fightId, fightData);
 
         // Check the room size after joining

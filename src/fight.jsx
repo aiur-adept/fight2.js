@@ -121,7 +121,7 @@ function Fight() {
       websocket.on('message', (msg) => {
         console.log(msg);
         const data = JSON.parse(msg);
-        console.log(data.event);
+        console.log(data.event);http://localhost:8080/fight/9330c68e-6c2c-4bb1-a947-fa615422372c
         switch(data.event) {
           case 'fight/begin':
             console.log('FIGHT BEGINS');
@@ -206,6 +206,7 @@ function Fight() {
       setOpponentUsername(opponentUsername);
       setPlayer(fightData.states[playerUsername]);
       setOpponent(fightData.states[opponentUsername]);
+      console.log(`set player & opponent; player = ${playerUsername}, opponent = ${opponentUsername}`);
     }
   }, [fightData, username]);
 
