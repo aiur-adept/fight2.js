@@ -91,16 +91,13 @@ function notifyBlocked(fightData, move) {
 }
 
 function notifyConnects(fightData, move) {
-  const blockPayload = {
+  const msg = {
     event: 'fight/moveConnects',
     fighter: fightData.names[fightData.initiative],
     move: move,
     fightData: fightData,
   };
-  for (const name of fightData.names) {
-    const playerWebSocket = sockets.get(name);
-    playerWebSocket.send(JSON.stringify(blockPayload));
-  }
+  emit(msg);
 }
 
 async function canAttack(fightData) {
