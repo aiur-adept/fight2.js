@@ -171,8 +171,6 @@ function getTelegraphMoves(fightData, realMove, availableMoves) {
 async function tickTime(fightData) {
   console.log(`tick t=${fightData.t}`);
 
-  const fightData = await getFightData(fightData.id);
-
   for (const name of fightData.names) {
     if (fightData.states[name].health <= 0) {
       const victor = fightData.names.find(name_ => name_ !== name);
@@ -256,9 +254,11 @@ async function fightJoin(socket, msg) {
   }
 }
 
-function fightAttack(socket, msg) {
+async function fightAttack(socket, msg) {
   console.log('[[attack]]');
   console.log(msg);
+  const fightData = await getFightData(msg.fightId);
+
   const realMove = msg.attack;
   const attacker = fightData.names[fightData.initiative];
 
@@ -291,9 +291,11 @@ function fightAttack(socket, msg) {
       // switch initiative
       fightData.initiative = (fightData.initiative + 1) % 2;
     }
+    await setFightData(fightData.id, fightData);
     canAttack(fightData);
   } else {
     const telegraphMoves = getTelegraphMoves(fightData, realMove, getAvailableMoves(fightData, data.user));
+    await setFightData(fightData.id, fightData);
     canBlock(fightData, telegraphMoves);
   }
 }
@@ -329,6 +331,7 @@ async function fightBlock(socket, msg) {
   if (Math.random() * 100 < (blockRate + blockerState.acuity - attackerState.acuity)) {
     notifyBlocked(fightData, realMove);
     fightData.initiative = (fightData.initiative + 1) % 2;
+    await setFightData(fightData.id, fightData);
     return tickTime(fightData);
   } else {
     notifyConnects(fightData, realMove);
@@ -357,8 +360,10 @@ async function fightBlock(socket, msg) {
           }
         } else if (submissions.includes(realMove)) {
           // Call stoppage function with appropriate arguments
+          await setFightData(fightData.id, fightData);
           return stoppage(fightData, attacker, `submission by ${realMove}`);
         } else {
+          await setFightData(fightData.id, fightData);
           damage(fightData, blocker, realMove);
         }
         break;
@@ -368,9 +373,11 @@ async function fightBlock(socket, msg) {
   // maintain or switch initiative
   if ((blockerState.health < 6 && Math.random() < 0.70) || (Math.random() * 100) < (70 / fightData.initiativeStrike)) {
     fightData.initiativeStrike += 1;
+    await setFightData(fightData.id, fightData);
     return canAttack(fightData);
   } else {
     fightData.initiative = (fightData.initiative + 1) % 2;
+    await setFightData(fightData.id, fightData);
     return canAttack(fightData);
   }
 }
