@@ -3,7 +3,6 @@ import * as http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { v4 as uuidv4 } from 'uuid';
 
 import apiRouter from './api.js';
 import { setupSocketIO } from './ws.js';

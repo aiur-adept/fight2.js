@@ -1,5 +1,3 @@
-const { sockets, fightAfterlife } = require('./fight-store');
-
 const stoppage = (fightData, victor, method) => {
   let victorName = victor;
   victorName = victorName.toUpperCase();
@@ -29,7 +27,7 @@ const stoppage = (fightData, victor, method) => {
     playerWebSocket.send(JSON.stringify(dataPayload));
   }
 
-  fightAfterlife(fightData);
+  // TODO: fightAfterlife(fightData);
 };
 
 function assignRoundScores(fightData) {
@@ -141,10 +139,10 @@ const judgeDecision = (fightData) => {
     playerWebSocket.send(JSON.stringify(dataPayload));
   }
 
-  fightAfterlife(fightData);
+  // TODO: fightAfterlife(fightData);
 };
 
-module.exports = {
+export {
   stoppage,
   assignRoundScores,
   judgeDecision,

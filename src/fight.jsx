@@ -128,9 +128,8 @@ function Fight() {
             break;
           case 'fight/data':
             console.log('fight data:');
-            const fightData = JSON.parse(data.fightData);
-            console.log(fightData);
-            setFightData(fightData);
+            console.log(data.fightData);
+            setFightData(data.fightData);
             break;
           case 'fight/output':
             writeToOutput(data.message.content, data.message.className);

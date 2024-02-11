@@ -1,6 +1,50 @@
-const { fights, fightsHidden, sockets } = require('./fight-store');
-const { standingMoves, grapplingMoves, submissions, damageRate, blockSuccessRate } = require('./moves');
-const { assignRoundScores, stoppage, judgeDecision } = require('./victory.js');
+import { 
+  standingMoves, 
+  grapplingMoves, 
+  submissions, 
+  damageRate, 
+  blockSuccessRate } from './moves.js';
+import { 
+  assignRoundScores, 
+  stoppage, 
+  judgeDecision } from './victory.js';
+
+import { io } from './ws.js';
+
+import { getFightData, setFightData } from './db.js';
+
+function emit(msg) {
+  console.log('---EMIT---:');
+  console.log(msg);
+  io.to(msg.fightData.id).emit(JSON.stringify(msg));
+}
+
+async function sendFightData(fightId) {
+  const fightData = await getFightData(fightId);
+  console.log(`sending ${JSON.stringify(fightData)}`);
+  const response = {
+      event: 'fight/data',
+      fightData,
+  };
+  emit(response);
+}
+
+async function startFight(fightData) {
+  fightData.status = 'in-progress';
+  await setFightData(fightData.id, fightData);
+  emit({ type: 'fight/start', fightData });
+}
+
+async function startRound(fightData) {
+  emit({ type: 'fight/roundStart', fightData });
+}
+
+function endRound(fightData) {
+  emit({ type: 'fight/roundEnd', fightData });
+}
+
+
+
 
 function getAvailableMoves(fightData, user) {
   // TODO: implement differential movesets for players
@@ -74,22 +118,26 @@ function notifyConnects(fightData, move) {
   }
 }
 
-function canAttack(fightData) {
+async function canAttack(fightData) {
   const user = fightData.names[fightData.initiative];
-  const payload = {
+  const msg = {
     type: 'fight/canAttack',
+    user,
     options: getAvailableMoves(fightData, user),
+    fightData,
   };
-  sockets.get(user).send(JSON.stringify(payload));
+  emit(msg);
 }
 
 function canBlock(fightData, telegraphMoves) {
   const user = fightData.names[(fightData.initiative + 1) % 2];
-  const payload = {
+  const msg = {
     type: 'fight/canBlock',
+    user,
     options: telegraphMoves,
+    fightData,
   };
-  sockets.get(user).send(JSON.stringify(payload));
+  emit(msg);
 }
 
 function getTelegraphMoves(fightData, realMove, availableMoves) {
@@ -172,65 +220,47 @@ function tickTime(fightData) {
   canAttack(fightData);
 }
 
-function startFight(fightData) {
-  fightData.status = 'in-progress';
-  for (const name of fightData.names) {
-    const playerWebSocket = sockets.get(name);
-    playerWebSocket.send(JSON.stringify({ type: 'fight/start' }));
+async function fightJoin(socket, msg) {
+  try {
+      console.log('[[join]]');
+      console.log(msg);
+      const { fightId } = msg;
+      socket.join(fightId);
+      console.log(`User ${socket.id} as ${msg.username} joined room: ${fightId}`);
+
+      // set the user's fight stats (health, acuity, etc.) and username
+      const fightData = await getFightData(fightId);
+      fightData.states[msg.username] = {
+          health: 20,
+          acuity: 100,
+          submissionProgress: 0,
+      };
+      const initiativeIx = Math.round(Math.random());
+      fightData.initiative = initiativeIx;
+      fightData.names.push(msg.username);
+      await setFightData(fightId, fightData);
+
+      // Check the room size after joining
+      const roomSize = io.sockets.adapter.rooms.get(fightId)?.size || 0;
+      console.log(`Room ${fightId} size: ${roomSize}`);
+
+      // If two users are in the room, start the fight
+      if (roomSize === 2) {
+          io.to(fightId).emit('message', JSON.stringify({ event: 'fight/begin' }));
+          console.log(`Fight started in room: ${fightId}`);
+          await startFight(fightData);
+          await startRound(fightData);
+          await sendFightData(fightId);
+          canAttack(fightData);
+      }
+  } catch (error) {
+      console.log(`Error parsing join data from ${socket.id}:`, error);
   }
 }
 
-function startRound(fightData) {
-  for (const name of fightData.names) {
-    const playerWebSocket = sockets.get(name);
-    playerWebSocket.send(JSON.stringify({ type: 'fight/roundStart' , fightData: fightData }));
-  }
-}
-
-function endRound(fightData) {
-  for (const name of fightData.names) {
-    const playerWebSocket = sockets.get(name);
-    playerWebSocket.send(JSON.stringify({ type: 'fight/roundEnd' , fightData: fightData }));
-  }
-}
-
-
-
-
-function fightJoin(fightData, data, ws) {
-  if (!fightData) {
-    ws.send(JSON.stringify({ type: 'error', message: 'Invalid fight ID' }));
-    return;
-  }
-
-  if (fightData.names.length === 2) {
-    ws.send(JSON.stringify({ type: 'error', message: 'Fight already has two players' }));
-    return;
-  }
-
-  console.log(`${data.username} joins fight ${fightData.id}`);
-
-  sockets.set(data.username, ws);
-  fightData.names.push(data.username);
-  fightData.states[data.username] = {
-    health: 20,
-    acuity: 100,
-    submissionProgress: 0,
-  };
-
-  if (fightData.names.length === 2) {
-    // Notify both players that the fight can start
-    startFight(fightData);
-    startRound(fightData);
-
-    // give one of them initiative
-    const initiativeIx = Math.round(Math.random());
-    fightData.initiative = initiativeIx;
-    canAttack(fightData);
-  }
-}
-
-function fightAttack(fightData, data, ws) {
+function fightAttack(socket, msg) {
+  console.log('[[attack]]');
+  console.log(msg);
   const realMove = data.attack;
   const hiddenData = fightsHidden.get(data.fightId);
   const attacker = fightData.names[fightData.initiative];
@@ -272,7 +302,9 @@ function fightAttack(fightData, data, ws) {
   }
 }
 
-function fightBlock(fightData, data, ws) {
+function fightBlock(socket, msg) {
+  console.log('[[block]]');
+  console.log(msg);
   const hiddenData = fightsHidden.get(data.fightId)
 
   const realMove = hiddenData.realMove;
@@ -355,4 +387,6 @@ const fightResponses = {
   "fight/block": fightBlock,
 };
 
-module.exports = { fightResponses };
+export {
+  fightResponses 
+};

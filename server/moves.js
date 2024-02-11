@@ -72,7 +72,7 @@ function blockSuccessRate(move) {
 }
 
 
-module.exports = {
+export {
   standingMoves,
   grapplingMoves,
   submissions,
