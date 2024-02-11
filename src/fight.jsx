@@ -132,6 +132,8 @@ function Fight() {
             setFightData(data.fightData);
             break;
           case 'fight/output':
+            console.log('fight/output:');
+            console.log(data.message);
             writeToOutput(data.message.content, data.message.className);
             break;
           case 'fight/roundStart':

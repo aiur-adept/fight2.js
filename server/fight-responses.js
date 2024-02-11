@@ -221,6 +221,9 @@ async function fightJoin(socket, msg) {
       const initiativeIx = Math.round(Math.random());
       fightData.initiative = initiativeIx;
       fightData.names.push(msg.username);
+      // store username with socketid
+      fightData.sockets[msg.username] = socket.id;
+      
       await setFightData(fightId, fightData);
 
       // Check the room size after joining
@@ -254,20 +257,16 @@ async function fightAttack(socket, msg) {
     const blockerIndex = (attackerIndex + 1) % 2;
     const blockerName = fightData.names[blockerIndex];
 
-    const feelOutMessage = {
-      content: `<span class="move feelOut">feel out...</span>`,
-    };
-
     // Send the feel-out message to the client
-    const dataPayload = {
-      type: "fight/output",
-      message: feelOutMessage,
+    const feelOutMsg = {
+      event: "fight/output",
+      message: {
+        content: `<span class="move feelOut">feel out...</span>`,
+      },
+      user: fightData.sockets[socket.id],
+      fightData,
     };
-    for (const name of fightData.names) {
-      const playerWebSocket = sockets.get(name);
-      dataPayload.message.className = name === attackerName ? 'player' : 'opponent';
-      playerWebSocket.send(JSON.stringify(dataPayload));
-    }
+    emit(feelOutMsg);
 
     if (Math.random() < 0.5) {
       fightData.states[fightData.names[attackerIndex]].acuity += Math.floor(Math.random() * 10);

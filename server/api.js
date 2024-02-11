@@ -19,6 +19,7 @@ app.get('/challenge', async (req, res) => {
     id: fightId,
     url: fightUrl,
     names: [],
+    sockets: {},
     round: 1,
     roundTime: 12,
     nRounds: 3,
