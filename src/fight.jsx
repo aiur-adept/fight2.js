@@ -143,10 +143,14 @@ function Fight() {
             writeToOutput(`=== END OF ROUND ${data.fightData.round} ===`);
             break;
           case 'fight/canAttack':
-            setOptions({ list: data.options, query: 'attack' });
+            if (data.user == username) {
+              setOptions({ list: data.options, query: 'attack' });
+            }
             break;
           case 'fight/canBlock':
-            setOptions({ list: data.options, query: 'block' });
+            if (data.user == username) {
+              setOptions({ list: data.options, query: 'block' });
+            }
             break;
           case 'fight/moveBlocked':
             setFightData(data.fightData);

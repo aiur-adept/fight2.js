@@ -16,7 +16,7 @@ import { getFightData, setFightData } from './db.js';
 function emit(msg) {
   console.log(`---EMIT @ ${msg.fightData.id}---:`);
   console.log(msg);
-  io.to(msg.fightData.id).emit(JSON.stringify(msg));
+  io.to(msg.fightData.id).emit('message', JSON.stringify(msg));
 }
 
 async function sendFightData(fightId) {
@@ -31,15 +31,15 @@ async function sendFightData(fightId) {
 async function startFight(fightData) {
   fightData.status = 'in-progress';
   await setFightData(fightData.id, fightData);
-  emit({ type: 'fight/start', fightData });
+  emit({ event: 'fight/start', fightData });
 }
 
 async function startRound(fightData) {
-  emit({ type: 'fight/roundStart', fightData });
+  emit({ event: 'fight/roundStart', fightData });
 }
 
 function endRound(fightData) {
-  emit({ type: 'fight/roundEnd', fightData });
+  emit({ event: 'fight/roundEnd', fightData });
 }
 
 
@@ -82,7 +82,7 @@ function damage(fightData, recipient, move) {
 
 function notifyFightData(fightData) {
   const dataPayload = {
-    type: 'fight/data',
+    event: 'fight/data',
     fightData: fightData,
   };
   for (const name of fightData.names) {
@@ -93,7 +93,7 @@ function notifyFightData(fightData) {
 
 function notifyBlocked(fightData, move) {
   const blockPayload = {
-    type: 'fight/moveBlocked',
+    event: 'fight/moveBlocked',
     fighter: fightData.names[fightData.initiative],
     move: move,
     fightData: fightData,
@@ -106,7 +106,7 @@ function notifyBlocked(fightData, move) {
 
 function notifyConnects(fightData, move) {
   const blockPayload = {
-    type: 'fight/moveConnects',
+    event: 'fight/moveConnects',
     fighter: fightData.names[fightData.initiative],
     move: move,
     fightData: fightData,
@@ -120,7 +120,7 @@ function notifyConnects(fightData, move) {
 async function canAttack(fightData) {
   const user = fightData.names[fightData.initiative];
   const msg = {
-    type: 'fight/canAttack',
+    event: 'fight/canAttack',
     user,
     options: getAvailableMoves(fightData, user),
     fightData,
@@ -131,7 +131,7 @@ async function canAttack(fightData) {
 function canBlock(fightData, telegraphMoves) {
   const user = fightData.names[(fightData.initiative + 1) % 2];
   const msg = {
-    type: 'fight/canBlock',
+    event: 'fight/canBlock',
     user,
     options: telegraphMoves,
     fightData,
@@ -259,8 +259,7 @@ async function fightJoin(socket, msg) {
 function fightAttack(socket, msg) {
   console.log('[[attack]]');
   console.log(msg);
-  const realMove = data.attack;
-  const hiddenData = fightsHidden.get(data.fightId);
+  const realMove = msg.attack;
   const attacker = fightData.names[fightData.initiative];
 
   if (realMove === "feel-out") {
@@ -294,7 +293,6 @@ function fightAttack(socket, msg) {
     }
     canAttack(fightData);
   } else {
-    hiddenData.realMove = realMove;
     const telegraphMoves = getTelegraphMoves(fightData, realMove, getAvailableMoves(fightData, data.user));
     canBlock(fightData, telegraphMoves);
   }
@@ -303,7 +301,7 @@ function fightAttack(socket, msg) {
 function fightBlock(socket, msg) {
   console.log('[[block]]');
   console.log(msg);
-  const hiddenData = fightsHidden.get(data.fightId)
+  const fightData = fightsHidden.get(data.fightId)
 
   const realMove = hiddenData.realMove;
   const userMove = data.block;
