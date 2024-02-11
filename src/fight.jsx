@@ -121,10 +121,10 @@ function Fight() {
       websocket.on('message', (msg) => {
         console.log(msg);
         const data = JSON.parse(msg);
-        console.log(data.event);http://localhost:8080/fight/9330c68e-6c2c-4bb1-a947-fa615422372c
+        console.log(data.event);
         switch(data.event) {
-          case 'fight/begin':
-            console.log('FIGHT BEGINS');
+          case 'fight/start':
+            console.log('FIGHT STARTS');
             break;
           case 'fight/data':
             console.log('fight data:');

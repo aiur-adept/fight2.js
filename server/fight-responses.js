@@ -14,14 +14,13 @@ import { io } from './ws.js';
 import { getFightData, setFightData } from './db.js';
 
 function emit(msg) {
-  console.log('---EMIT---:');
+  console.log(`---EMIT @ ${msg.fightData.id}---:`);
   console.log(msg);
   io.to(msg.fightData.id).emit(JSON.stringify(msg));
 }
 
 async function sendFightData(fightId) {
   const fightData = await getFightData(fightId);
-  console.log(`sending ${JSON.stringify(fightData)}`);
   const response = {
       event: 'fight/data',
       fightData,
@@ -246,7 +245,6 @@ async function fightJoin(socket, msg) {
 
       // If two users are in the room, start the fight
       if (roomSize === 2) {
-          io.to(fightId).emit('message', JSON.stringify({ event: 'fight/begin' }));
           console.log(`Fight started in room: ${fightId}`);
           await startFight(fightData);
           await startRound(fightData);
