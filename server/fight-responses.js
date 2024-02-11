@@ -168,10 +168,10 @@ function getTelegraphMoves(fightData, realMove, availableMoves) {
   return telegraphMoves;
 }
 
-function tickTime(fightData) {
+async function tickTime(fightData) {
   console.log(`tick t=${fightData.t}`);
 
-  const hiddenData = fightsHidden.get(fightData.id);
+  const fightData = await getFightData(fightData.id);
 
   for (const name of fightData.names) {
     if (fightData.states[name].health <= 0) {
@@ -215,7 +215,7 @@ function tickTime(fightData) {
   if (fightData.mode === "standing") {
     fightData.submissionProgress = [0, 0];
   }
-  hiddenData.initiativeStrike = 0;
+  fightData.initiativeStrike = 0;
   canAttack(fightData);
 }
 
@@ -298,12 +298,12 @@ function fightAttack(socket, msg) {
   }
 }
 
-function fightBlock(socket, msg) {
+async function fightBlock(socket, msg) {
   console.log('[[block]]');
   console.log(msg);
-  const fightData = fightsHidden.get(data.fightId)
+  const fightData = await getFightData(data.fightId);
 
-  const realMove = hiddenData.realMove;
+  const realMove = fightData.realMove;
   const userMove = data.block;
 
   let blockRate = blockSuccessRate(userMove);
@@ -339,9 +339,9 @@ function fightBlock(socket, msg) {
         if (realMove === "grapple") {
           fightData.mode = "grappling";
           attackerState.submissionProgress = Math.floor(Math.random() * 0.8);
-          hiddenData.initiativeStrike = 0;
+          fightData.initiativeStrike = 0;
         } else {
-          hiddenData.initiativeStrike++;
+          fightData.initiativeStrike++;
           damage(fightData, blocker, realMove);
         }
         break;
@@ -351,7 +351,7 @@ function fightBlock(socket, msg) {
         } else if (realMove === "escape") {
           if (blockerState.submissionProgress === 0) {
             fightData.mode = "standing";
-            hiddenData.initiativeStrike = 0;
+            fightData.initiativeStrike = 0;
           } else {
             blockerState.submissionProgress = 0;
           }
@@ -366,8 +366,8 @@ function fightBlock(socket, msg) {
   }
   notifyFightData(fightData);
   // maintain or switch initiative
-  if ((blockerState.health < 6 && Math.random() < 0.70) || (Math.random() * 100) < (70 / hiddenData.initiativeStrike)) {
-    hiddenData.initiativeStrike += 1;
+  if ((blockerState.health < 6 && Math.random() < 0.70) || (Math.random() * 100) < (70 / fightData.initiativeStrike)) {
+    fightData.initiativeStrike += 1;
     return canAttack(fightData);
   } else {
     fightData.initiative = (fightData.initiative + 1) % 2;
