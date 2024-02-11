@@ -80,28 +80,14 @@ function damage(fightData, recipient, move) {
   }
 }
 
-function notifyFightData(fightData) {
-  const dataPayload = {
-    event: 'fight/data',
-    fightData: fightData,
-  };
-  for (const name of fightData.names) {
-    const playerWebSocket = sockets.get(name);
-    playerWebSocket.send(JSON.stringify(dataPayload));
-  }
-}
-
 function notifyBlocked(fightData, move) {
-  const blockPayload = {
+  const msg = {
     event: 'fight/moveBlocked',
     fighter: fightData.names[fightData.initiative],
     move: move,
     fightData: fightData,
   };
-  for (const name of fightData.names) {
-    const playerWebSocket = sockets.get(name);
-    playerWebSocket.send(JSON.stringify(blockPayload));
-  }
+  emit(msg);
 }
 
 function notifyConnects(fightData, move) {
@@ -286,7 +272,7 @@ async function fightAttack(socket, msg) {
     if (Math.random() < 0.5) {
       fightData.states[fightData.names[attackerIndex]].acuity += Math.floor(Math.random() * 10);
       // Send the updated fight data to both clients
-      notifyFightData(fightData);
+      sendFightData(fightData.id);
     } else {
       // switch initiative
       fightData.initiative = (fightData.initiative + 1) % 2;
@@ -294,7 +280,7 @@ async function fightAttack(socket, msg) {
     await setFightData(fightData.id, fightData);
     canAttack(fightData);
   } else {
-    const telegraphMoves = getTelegraphMoves(fightData, realMove, getAvailableMoves(fightData, data.user));
+    const telegraphMoves = getTelegraphMoves(fightData, realMove, getAvailableMoves(fightData, msg.user));
     await setFightData(fightData.id, fightData);
     canBlock(fightData, telegraphMoves);
   }
@@ -303,10 +289,10 @@ async function fightAttack(socket, msg) {
 async function fightBlock(socket, msg) {
   console.log('[[block]]');
   console.log(msg);
-  const fightData = await getFightData(data.fightId);
+  const fightData = await getFightData(msg.fightId);
 
   const realMove = fightData.realMove;
-  const userMove = data.block;
+  const userMove = msg.block;
 
   let blockRate = blockSuccessRate(userMove);
 
@@ -369,7 +355,7 @@ async function fightBlock(socket, msg) {
         break;
     }
   }
-  notifyFightData(fightData);
+  sendFightData(fightData.id);
   // maintain or switch initiative
   if ((blockerState.health < 6 && Math.random() < 0.70) || (Math.random() * 100) < (70 / fightData.initiativeStrike)) {
     fightData.initiativeStrike += 1;
