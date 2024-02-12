@@ -36,10 +36,8 @@ app.get('/challenge', async (req, res) => {
 
 
   try {
-    // Use setFightData instead of client.set
     await setFightData(fightId, fightData);
     console.log(`Created fight key in db: ${fightId}`);
-    // Respond with the generated UUID and fight URL
     res.json({ fightId, fightUrl });
   } catch (error) {
     console.error('Error storing fight data:', error);

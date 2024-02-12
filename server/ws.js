@@ -10,6 +10,18 @@ const port = process.env.PORT || 8080;
 
 let io;
 
+function emit(msg, user) {
+    console.log(`---EMIT @ ${msg.fightData.id}---:`);
+    console.log(msg);
+    let target;
+    if (user) {
+        target = msg.fightData.sockets[user];
+    } else {
+        target = msg.fightData.id;
+    }
+    io.to(target).emit('message', JSON.stringify(msg));
+}
+
 function setupSocketIO(server) {
     io = new Server(server);
     const pubClient = createClient({ url: "redis://localhost:6379" });
@@ -20,14 +32,14 @@ function setupSocketIO(server) {
 
         io.on('connection', (socket) => {
             console.log('A user connected:', socket.id);
-        
+
             // Handling messages. Assuming messages include the UUID.
             socket.on('message', (data) => {
                 try {
-                    const message = JSON.parse(data); // Assuming data is a JSON string
-                    const { fightId } = message;
+                    const msg = JSON.parse(data); // Assuming data is a JSON string
+                    const { fightId } = msg;
                     console.log(`Message received for room ${fightId} from ${socket.id}`);
-                    handleMessage(socket, message);
+                    handleMessage(socket, msg);
                 } catch (error) {
                     console.log(`Error parsing message data from ${socket.id}:`, error);
                 }
@@ -59,5 +71,6 @@ function setupSocketIO(server) {
 
 export {
     io,
+    emit,
     setupSocketIO,
 };

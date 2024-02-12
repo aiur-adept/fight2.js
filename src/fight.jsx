@@ -121,7 +121,6 @@ function Fight() {
       websocket.on('message', (msg) => {
         console.log(msg);
         const data = JSON.parse(msg);
-        console.log(data.event);
         if (data.fightData) {
           setFightData(data.fightData);
         }
@@ -130,6 +129,7 @@ function Fight() {
             console.log('FIGHT STARTS');
             break;
           case 'fight/data':
+            // nothing to do, since all messages bearing fight data are handled before this switch statement
             break;
           case 'fight/output':
             console.log('fight/output:');

@@ -9,30 +9,9 @@ import {
   stoppage, 
   judgeDecision } from './victory.js';
 
-import { io } from './ws.js';
+import { io, emit } from './ws.js';
 
 import { getFightData, setFightData } from './db.js';
-
-function emit(msg, user) {
-  console.log(`---EMIT @ ${msg.fightData.id}---:`);
-  console.log(msg);
-  let target;
-  if (user) {
-    target = msg.fightData.sockets[user];
-  } else {
-    target = msg.fightData.id;
-  }
-  io.to(target).emit('message', JSON.stringify(msg));
-}
-
-async function sendFightData(fightId) {
-  const fightData = await getFightData(fightId);
-  const response = {
-      event: 'fight/data',
-      fightData,
-  };
-  emit(response);
-}
 
 async function startFight(fightData) {
   fightData.status = 'in-progress';
@@ -205,7 +184,9 @@ async function tickTime(fightData) {
   canAttack(fightData);
 }
 
-async function fightJoin(socket, msg) {
+
+
+async function fightJoin(socket, msg, fightData) {
   try {
       console.log('[[join]]');
       console.log(msg);
@@ -214,7 +195,6 @@ async function fightJoin(socket, msg) {
       console.log(`User ${socket.id} as ${msg.username} joined room: ${fightId}`);
 
       // set the user's fight stats (health, acuity, etc.) and username
-      const fightData = await getFightData(fightId);
       fightData.states[msg.username] = {
           health: 20,
           acuity: 100,
@@ -226,8 +206,6 @@ async function fightJoin(socket, msg) {
       // store username with socketid
       fightData.sockets[msg.username] = socket.id;
       
-      await setFightData(fightId, fightData);
-
       // Check the room size after joining
       const roomSize = io.sockets.adapter.rooms.get(fightId)?.size || 0;
       console.log(`Room ${fightId} size: ${roomSize}`);
@@ -237,7 +215,6 @@ async function fightJoin(socket, msg) {
           console.log(`Fight started in room: ${fightId}`);
           await startFight(fightData);
           await startRound(fightData);
-          await sendFightData(fightId);
           canAttack(fightData);
       }
   } catch (error) {
@@ -278,12 +255,10 @@ async function fightAttack(socket, msg) {
       // switch initiative
       fightData.initiative = (fightData.initiative + 1) % 2;
     }
-    await setFightData(fightData.id, fightData);
     canAttack(fightData);
   } else {
     const telegraphMoves = getTelegraphMoves(fightData, realMove, getAvailableMoves(fightData, msg.user));
     fightData.realMove = realMove;
-    await setFightData(fightData.id, fightData);
     canBlock(fightData, telegraphMoves);
   }
 }
@@ -319,7 +294,6 @@ async function fightBlock(socket, msg) {
   if (Math.random() * 100 < (blockRate + blockerState.acuity - attackerState.acuity)) {
     notifyBlocked(fightData, realMove);
     fightData.initiative = (fightData.initiative + 1) % 2;
-    await setFightData(fightData.id, fightData);
     return tickTime(fightData);
   } else {
     notifyConnects(fightData, realMove);
@@ -348,7 +322,6 @@ async function fightBlock(socket, msg) {
           }
         } else if (submissions.includes(realMove)) {
           // Call stoppage function with appropriate arguments
-          await setFightData(fightData.id, fightData);
           return stoppage(fightData, attacker, `submission by ${realMove}`);
         } else {
           damage(fightData, blocker, realMove);
@@ -360,11 +333,9 @@ async function fightBlock(socket, msg) {
   // maintain or switch initiative
   if ((blockerState.health < 6 && Math.random() < 0.70) || (Math.random() * 100) < (70 / fightData.initiativeStrike)) {
     fightData.initiativeStrike += 1;
-    await setFightData(fightData.id, fightData);
     return canAttack(fightData);
   } else {
     fightData.initiative = (fightData.initiative + 1) % 2;
-    await setFightData(fightData.id, fightData);
     return canAttack(fightData);
   }
 }
