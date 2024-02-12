@@ -122,14 +122,14 @@ function Fight() {
         console.log(msg);
         const data = JSON.parse(msg);
         console.log(data.event);
+        if (data.fightData) {
+          setFightData(data.fightData);
+        }
         switch(data.event) {
           case 'fight/start':
             console.log('FIGHT STARTS');
             break;
           case 'fight/data':
-            console.log('fight data:');
-            console.log(data.fightData);
-            setFightData(data.fightData);
             break;
           case 'fight/output':
             console.log('fight/output:');
@@ -137,25 +137,18 @@ function Fight() {
             writeToOutput(data.message.content, data.message.className);
             break;
           case 'fight/roundStart':
-            setFightData(data.fightData);
             writeToOutput(`=== START OF ROUND ${data.fightData.round} ===`);
             break;
           case 'fight/roundEnd':
-            setFightData(data.fightData);
             writeToOutput(`=== END OF ROUND ${data.fightData.round} ===`);
             break;
           case 'fight/canAttack':
-            if (data.user == username) {
-              setOptions({ list: data.options, query: 'attack' });
-            }
+            setOptions({ list: data.options, query: 'attack' });
             break;
           case 'fight/canBlock':
-            if (data.user == username) {
-              setOptions({ list: data.options, query: 'block' });
-            }
+            setOptions({ list: data.options, query: 'block' });
             break;
           case 'fight/moveBlocked':
-            setFightData(data.fightData);
             if (data.fighter === username) {
               writeToOutput('blocked.', 'opponent block');
             } else {
@@ -164,7 +157,6 @@ function Fight() {
             }
             break;
           case 'fight/moveConnects':
-            setFightData(data.fightData);
             const isPlayer = data.fighter === username;
             if (fightDataRef.current.mode === 'standing') {
               if (data.move === 'grapple') {
@@ -178,7 +170,6 @@ function Fight() {
             }
             break;
           case 'fight/stoppage':
-            setFightData(data.fightData)
             data.messages.forEach((message) => {
               writeToOutput(message.content, message.className);
             });

@@ -13,10 +13,16 @@ import { io } from './ws.js';
 
 import { getFightData, setFightData } from './db.js';
 
-function emit(msg) {
+function emit(msg, user) {
   console.log(`---EMIT @ ${msg.fightData.id}---:`);
   console.log(msg);
-  io.to(msg.fightData.id).emit('message', JSON.stringify(msg));
+  let target;
+  if (user) {
+    target = msg.fightData.sockets[user];
+  } else {
+    target = msg.fightData.id;
+  }
+  io.to(target).emit('message', JSON.stringify(msg));
 }
 
 async function sendFightData(fightId) {
@@ -62,7 +68,7 @@ function getAvailableMoves(fightData, user) {
   return availableMoves;
 }
 
-function damage(fightData, recipient, move) {
+async function damage(fightData, recipient, move) {
   const rollD6 = () => {
     return Math.floor(Math.random() * 6) + 1;
   }
@@ -78,6 +84,7 @@ function damage(fightData, recipient, move) {
   if (move != "headbutt-stomach") {
     otherState.roundPoints++;
   }
+  await setFightData(fightData.id, fightData);
 }
 
 function notifyBlocked(fightData, move) {
@@ -104,22 +111,20 @@ async function canAttack(fightData) {
   const user = fightData.names[fightData.initiative];
   const msg = {
     event: 'fight/canAttack',
-    user,
     options: getAvailableMoves(fightData, user),
     fightData,
   };
-  emit(msg);
+  emit(msg, user);
 }
 
 function canBlock(fightData, telegraphMoves) {
   const user = fightData.names[(fightData.initiative + 1) % 2];
   const msg = {
     event: 'fight/canBlock',
-    user,
     options: telegraphMoves,
     fightData,
   };
-  emit(msg);
+  emit(msg, user);
 }
 
 function getTelegraphMoves(fightData, realMove, availableMoves) {
@@ -277,6 +282,7 @@ async function fightAttack(socket, msg) {
     canAttack(fightData);
   } else {
     const telegraphMoves = getTelegraphMoves(fightData, realMove, getAvailableMoves(fightData, msg.user));
+    fightData.realMove = realMove;
     await setFightData(fightData.id, fightData);
     canBlock(fightData, telegraphMoves);
   }
@@ -345,7 +351,6 @@ async function fightBlock(socket, msg) {
           await setFightData(fightData.id, fightData);
           return stoppage(fightData, attacker, `submission by ${realMove}`);
         } else {
-          await setFightData(fightData.id, fightData);
           damage(fightData, blocker, realMove);
         }
         break;
