@@ -1,28 +1,34 @@
-import { fightResponses } from './fight-responses.js';
+import { fightJoin, fightResponses, tickTime } from './fight-responses.js';
 import { getFightData, setFightData } from './db.js';
 import { emit } from './ws.js';
 
 async function sendFightData(fightData) {
     const response = {
         event: 'fight/data',
-        fightData,
     };
-    emit(response);
+    emit(fightData.id, response);
 }
 
 async function handleMessage(socket, msg) {
     const { fightId } = msg;
-    console.log(`[${msg.type}]@${fightId}`);
+    console.log(`[${msg.event}]@${fightId}`);
 
     // get fight data
-    const fightData = getFightData(fightId);
+    const fightData = await getFightData(fightId);
 
-    // game logic
-    fightResponses[msg.type](socket, msg, fightData);
+    if (msg.event == 'fight/join') {
+        console.log('fightData:');
+        console.log(fightData);
+        fightJoin(socket, msg, fightData);
+        await setFightData(fightId, fightData);
+    } else {
+        // game logic
+        fightResponses[msg.type](socket, msg, fightData);
+        tickTime(fightData);
+        await setFightData(fightId, fightData);
+        sendFightData(fightData);
+    }
 
-    // persist and send (changed) fight data
-    setFightData(fightId, fightData);
-    sendFightData(fightData);
 }
 
 export {

@@ -87,7 +87,7 @@ function Fight() {
 
   const handleOptionClick = async (option) => {
     let payload = {
-      type: `fight/${options.query}`
+      event: `fight/${options.query}`
     };
     payload[options.query] = option;
     sendWS(payload);
@@ -109,7 +109,7 @@ function Fight() {
 
       websocket.on('connect', () => {
         console.log('joining fight...');
-        websocket.send(JSON.stringify({ type: 'fight/join', username, fightId: uuid }));
+        websocket.send(JSON.stringify({ event: 'fight/join', username, fightId: uuid }));
       });
 
       websocket.on('disconnect', () => {
@@ -216,7 +216,7 @@ function Fight() {
     <>
       {error ? (
         <div>{error}</div>
-      ) : fightData ? (
+      ) : (fightData && fightData.names.length == 2) ? (
         <>
           <div id="header" className="header">
             <div id="vitals">

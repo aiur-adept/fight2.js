@@ -10,8 +10,8 @@ const port = process.env.PORT || 8080;
 
 let io;
 
-function emit(msg, user) {
-    console.log(`---EMIT @ ${msg.fightData.id}---:`);
+function emit(fightId, msg, user) {
+    console.log(`---EMIT @ ${fightId}---:`);
     console.log(msg);
     let target;
     if (user) {
