@@ -228,7 +228,7 @@ async function fightBlock(socket, msg, fightData) {
   if (Math.random() * 100 < (blockRate + blockerState.acuity - attackerState.acuity)) {
     notifyBlocked(fightData, realMove);
     fightData.initiative = (fightData.initiative + 1) % 2;
-    return;
+    return tickTime(fightData);
   } else {
     notifyConnects(fightData, realMove);
     // Move connects, so apply damage, submission progress, or mode change 

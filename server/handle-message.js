@@ -15,7 +15,6 @@ async function handleMessage(socket, msg) {
     } else {
         // game logic
         fightResponses[msg.event](socket, msg, fightData);
-        tickTime(fightData);
         await setFightData(fightId, fightData);
         sendFightData(fightData);
     }
