@@ -1,45 +1,37 @@
-import { 
-  submissions, 
-  blockSuccessRate } from './moves.js';
+import {
+  notifyStartFight,
+  notifyStartRound,
+  notifyEndRound,
+  notifyFeelOut,
+  notifyBlocked,
+  notifyConnects
+} from './notify.js';
 
 import {
-    getAvailableMoves,
-    damage,
-    getTelegraphMoves
+  submissions,
+  blockSuccessRate
+} from './moves.js';
+
+import {
+  getAvailableMoves,
+  damage,
+  getTelegraphMoves
 } from './fight-logic.js'
 
-import { 
-  assignRoundScores, 
-  stoppage, 
-  judgeDecision } from './victory.js';
+import {
+  assignRoundScores,
+  stoppage,
+  judgeDecision
+} from './victory.js';
 
 import { io, emit, sendFightData } from './ws.js';
 
-async function startFight(fightData) {
-  fightData.status = 'in-progress';
-  emit(fightData.id, { event: 'fight/start' });
-}
-
-async function startRound(fightData) {
-  emit(fightData.id, { event: 'fight/roundStart' });
-}
-
-function endRound(fightData) {
-  emit(fightData.id, { event: 'fight/roundEnd' });
-}
-
+import chalk from 'chalk';
 
 
 
 async function tickTime(fightData) {
-  console.log(`tick t=${fightData.t}`);
-
-  for (const name of fightData.names) {
-    if (fightData.states[name].health <= 0) {
-      const victor = fightData.names.find(name_ => name_ !== name);
-      stoppage(fightData, victor, "TKO");
-    }
-  }
+  console.log(chalk.blue(`tick t=${fightData.t}`));
 
   // Update acuity
   const a = fightData.names[fightData.initiative];
@@ -57,7 +49,7 @@ async function tickTime(fightData) {
   fightData.t++;
   if (fightData.t === fightData.roundTime) {
     // End this round
-    endRound(fightData);
+    notifyEndRound(fightData);
     assignRoundScores(fightData);
     // advance round
     fightData.t = 0;
@@ -67,7 +59,7 @@ async function tickTime(fightData) {
       return judgeDecision(fightData);
     } else {
       // TODO recoverBetweenRounds()
-      startRound(fightData);
+      notifyStartRound(fightData);
       fightData.mode = "standing";
       // Coin flip for initiative at the beginning of the round
       fightData.initiative = Math.floor(Math.random() * 2);
@@ -82,35 +74,6 @@ async function tickTime(fightData) {
 
 
 
-function notifyFeelOut(attackerName, fightData) {
-  const msg = {
-    event: "fight/output",
-    message: {
-      content: `<span class="move feelOut">feel out...</span>`,
-    },
-    attacker: attackerName,
-    fightData,
-  };
-  emit(fightData.id, msg);
-}
-
-function notifyBlocked(fightData, move) {
-  const msg = {
-    event: 'fight/moveBlocked',
-    fighter: fightData.names[fightData.initiative],
-    move: move
-  };
-  emit(fightData.id, msg);
-}
-
-function notifyConnects(fightData, move) {
-  const msg = {
-    event: 'fight/moveConnects',
-    fighter: fightData.names[fightData.initiative],
-    move: move
-  };
-  emit(fightData.id, msg);
-}
 
 async function canAttack(fightData) {
   const user = fightData.names[fightData.initiative];
@@ -135,38 +98,38 @@ function canBlock(fightData, telegraphMoves) {
 
 async function fightJoin(socket, msg, fightData) {
   try {
-      console.log('[[join]]');
-      console.log(msg);
-      const { fightId } = msg;
-      socket.join(fightId);
-      console.log(`User ${socket.id} as ${msg.username} joined room: ${fightId}`);
+    console.log('[[join]]');
+    console.log(msg);
+    const { fightId } = msg;
+    socket.join(fightId);
+    console.log(`User ${socket.id} as ${msg.username} joined room: ${fightId}`);
 
-      // set the user's fight stats (health, acuity, etc.) and username
-      fightData.states[msg.username] = {
-          health: 20,
-          acuity: 100,
-          submissionProgress: 0,
-      };
-      const initiativeIx = Math.round(Math.random());
-      fightData.initiative = initiativeIx;
-      fightData.names.push(msg.username);
-      // store username with socketid
-      fightData.sockets[msg.username] = socket.id;
-      
-      // Check the room size after joining
-      const roomSize = io.sockets.adapter.rooms.get(fightId)?.size || 0;
-      console.log(`Room ${fightId} size: ${roomSize}`);
+    // set the user's fight stats (health, acuity, etc.) and username
+    fightData.states[msg.username] = {
+      health: 1,
+      acuity: 100,
+      submissionProgress: 0,
+    };
+    const initiativeIx = Math.round(Math.random());
+    fightData.initiative = initiativeIx;
+    fightData.names.push(msg.username);
+    // store username with socketid
+    fightData.sockets[msg.username] = socket.id;
 
-      // If two users are in the room, start the fight
-      if (roomSize === 2) {
-          console.log(`Fight started in room: ${fightId}`);
-          await sendFightData(fightData);
-          await startFight(fightData);
-          await startRound(fightData);
-          canAttack(fightData);
-      }
+    // Check the room size after joining
+    const roomSize = io.sockets.adapter.rooms.get(fightId)?.size || 0;
+    console.log(`Room ${fightId} size: ${roomSize}`);
+
+    // If two users are in the room, start the fight
+    if (roomSize === 2) {
+      console.log(`Fight started in room: ${fightId}`);
+      await sendFightData(fightData);
+      await notifyStartFight(fightData);
+      await notifyStartRound(fightData);
+      canAttack(fightData);
+    }
   } catch (error) {
-      console.log(`Error parsing join data from ${socket.id}:`, error);
+    console.log(`Error parsing join data from ${socket.id}:`, error);
   }
 }
 

@@ -1,3 +1,5 @@
+import { notifyStoppage, notifyJudgeDecision } from './notify.js';
+
 const stoppage = (fightData, victor, method) => {
   let victorName = victor;
   victorName = victorName.toUpperCase();
@@ -15,17 +17,7 @@ const stoppage = (fightData, victor, method) => {
   fightData.result = `${victor} by ${method} in round ${fightData.round}`;
   fightData.status = 'finished';
 
-  const dataPayload = {
-    type: "fight/stoppage",
-    messages: messages,
-    fightData: fightData,
-  };
-
-  // Send the stoppage data to both users
-  for (const name of fightData.names) {
-    const playerWebSocket = sockets.get(name);
-    playerWebSocket.send(JSON.stringify(dataPayload));
-  }
+  notifyStoppage(fightData);
 
   // TODO: fightAfterlife(fightData);
 };
@@ -125,19 +117,7 @@ const judgeDecision = (fightData) => {
     className: "buffer",
   });
 
-  const dataPayload = {
-    type: "fight/judgeDecision",
-    messages: messages,
-    result: result,
-  };
-  fightData.result = `${victor} by judge's decision`;
-  fightData.status = 'finished';
-
-  // Send the judgeDecision data to both users
-  for (const name of fightData.names) {
-    const playerWebSocket = sockets.get(name);
-    playerWebSocket.send(JSON.stringify(dataPayload));
-  }
+  notifyJudgeDecision(fightData, messages);
 
   // TODO: fightAfterlife(fightData);
 };
