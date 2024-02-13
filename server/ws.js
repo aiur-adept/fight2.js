@@ -49,23 +49,16 @@ function setupSocketIO(server) {
 
             socket.on('disconnect', async () => {
                 console.log(`User disconnected: ${socket.id}`);
-                // Retrieve all rooms (fights) the socket is currently in
-                const rooms = Array.from(socket.rooms);
-                rooms.forEach(async (uuid) => {
-                    // Skip the socket's own ID, which is also listed in rooms
-                    if (uuid === socket.id) return;
-
-                    const roomSize = io.sockets.adapter.rooms.get(uuid)?.size || 0;
-                    console.log(`Room ${uuid} size after disconnect: ${roomSize}`);
-
-                    // If the room is empty after the user disconnects, delete the fight data
-                    if (roomSize === 0) {
-                        console.log(`Deleting fight data for empty room: ${uuid}`);
-                        await client.del(uuid);
-                    }
-                });
             });
         });
+
+        io.of("/").adapter.on("leave-room", async (room) => {
+            console.log(`room ${room} had a leave-room event`);
+            if (io.sockets.adapter.rooms.get(room).size == 0) {
+                console.log(`no users left in room ${room}, deleting fightData...`);
+                await client.del(room);
+            }
+          });
 
         console.log(`socket.io listening on port ${port}`);
     });
