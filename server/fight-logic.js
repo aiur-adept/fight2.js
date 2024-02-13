@@ -2,6 +2,7 @@ import {
     standingMoves, 
     grapplingMoves, 
     damageRate, 
+    submissions
 } from './moves.js';
 
 function getAvailableMoves(fightData, user) {

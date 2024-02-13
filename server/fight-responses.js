@@ -29,21 +29,23 @@ import { io, emit, sendFightData } from './ws.js';
 import chalk from 'chalk';
 
 
-
-async function tickTime(fightData) {
-  console.log(chalk.blue(`tick t=${fightData.t}`));
-
-  // Update acuity
+function updateAcuity(fightData) {
   const a = fightData.names[fightData.initiative];
   const aState = fightData.states[a];
   const b = fightData.names[(fightData.initiative + 1) % 2];
   const bState = fightData.states[b];
   // interpolate the player's acuity;
   aState.acuity = 0.8 * aState.acuity + 0.2 * bState.acuity;
-
+  // random adjustment to acuity
   if (Math.random() < 0.2) {
     aState.acuity = Math.round(Math.max(aState.acuity * 0.9, aState.acuity + 10));
   }
+}
+
+async function tickTime(fightData) {
+  console.log(chalk.blue(`tick t=${fightData.t}`));
+
+  updateAcuity(fightData);
 
   // Handle round time and progression
   fightData.t++;
@@ -65,9 +67,7 @@ async function tickTime(fightData) {
       fightData.initiative = Math.floor(Math.random() * 2);
     }
   }
-  if (fightData.mode === "standing") {
-    fightData.submissionProgress = [0, 0];
-  }
+
   fightData.initiativeStrike = 0;
   canAttack(fightData);
 }
@@ -213,6 +213,7 @@ async function fightBlock(socket, msg, fightData) {
         } else if (realMove === "escape") {
           if (blockerState.submissionProgress === 0) {
             fightData.mode = "standing";
+            fightData.submissionProgress = [0, 0];
             fightData.initiativeStrike = 0;
           } else {
             blockerState.submissionProgress = 0;
