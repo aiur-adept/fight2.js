@@ -123,8 +123,8 @@ function Fight() {
         const data = JSON.parse(msg);
         if (data.fightData) {
           setFightData(data.fightData);
-          console.log(data.fightData);
         }
+        console.log(data);
         switch(data.event) {
           case 'fight/start':
             console.log('FIGHT STARTS');

@@ -1,3 +1,5 @@
+import { emit } from './ws.js';
+
 export function notifyStartFight(fightData) {
     fightData.status = 'in-progress';
     emit(fightData.id, { event: 'fight/start' });
@@ -43,7 +45,7 @@ export function notifyConnects(fightData, move) {
 
 export function notifyStoppage(fightData, messages) {
     const msg = {
-        type: "fight/stoppage",
+        event: "fight/stoppage",
         messages: messages,
         fightData: fightData,
     };
@@ -52,7 +54,7 @@ export function notifyStoppage(fightData, messages) {
 
 export function notifyJudgeDecision(fightData, messages) {
     const msg = {
-        type: "fight/judgeDecision",
+        event: "fight/judgeDecision",
         messages: messages,
         result: result,
     };

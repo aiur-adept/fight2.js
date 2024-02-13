@@ -17,7 +17,7 @@ const stoppage = (fightData, victor, method) => {
   fightData.result = `${victor} by ${method} in round ${fightData.round}`;
   fightData.status = 'finished';
 
-  notifyStoppage(fightData);
+  notifyStoppage(fightData, messages);
 
   // TODO: fightAfterlife(fightData);
 };
