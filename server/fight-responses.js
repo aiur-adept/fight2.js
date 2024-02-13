@@ -106,7 +106,7 @@ async function fightJoin(socket, msg, fightData) {
 
     // set the user's fight stats (health, acuity, etc.) and username
     fightData.states[msg.username] = {
-      health: 1,
+      health: 20,
       acuity: 100,
       submissionProgress: 0,
     };
