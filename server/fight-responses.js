@@ -13,7 +13,7 @@ import {
   stoppage, 
   judgeDecision } from './victory.js';
 
-import { io, emit } from './ws.js';
+import { io, emit, sendFightData } from './ws.js';
 
 async function startFight(fightData) {
   fightData.status = 'in-progress';
@@ -82,6 +82,18 @@ async function tickTime(fightData) {
 
 
 
+function notifyFeelOut(attackerName, fightData) {
+  const msg = {
+    event: "fight/output",
+    message: {
+      content: `<span class="move feelOut">feel out...</span>`,
+    },
+    attacker: attackerName,
+    fightData,
+  };
+  emit(fightData.id, msg);
+}
+
 function notifyBlocked(fightData, move) {
   const msg = {
     event: 'fight/moveBlocked',
@@ -106,7 +118,7 @@ async function canAttack(fightData) {
     event: 'fight/canAttack',
     options: getAvailableMoves(fightData, user),
   };
-  emit(fightData.id, msg, user);
+  emit(fightData.id, msg, fightData.sockets[user]);
 }
 
 function canBlock(fightData, telegraphMoves) {
@@ -116,7 +128,7 @@ function canBlock(fightData, telegraphMoves) {
     options: telegraphMoves,
     fightData,
   };
-  emit(fightData.id, msg, user);
+  emit(fightData.id, msg, fightData.sockets[user]);
 }
 
 
@@ -148,6 +160,7 @@ async function fightJoin(socket, msg, fightData) {
       // If two users are in the room, start the fight
       if (roomSize === 2) {
           console.log(`Fight started in room: ${fightId}`);
+          await sendFightData(fightData);
           await startFight(fightData);
           await startRound(fightData);
           canAttack(fightData);
@@ -167,19 +180,9 @@ async function fightAttack(socket, msg, fightData) {
   if (realMove === "feel-out") {
     const attackerName = attacker;
     const attackerIndex = fightData.initiative;
-    const blockerIndex = (attackerIndex + 1) % 2;
-    const blockerName = fightData.names[blockerIndex];
 
     // Send the feel-out message to the client
-    const feelOutMsg = {
-      event: "fight/output",
-      message: {
-        content: `<span class="move feelOut">feel out...</span>`,
-      },
-      user: fightData.sockets[socket.id],
-      fightData,
-    };
-    emit(feelOutMsg);
+    notifyFeelOut(attackerName, fightData);
 
     if (Math.random() < 0.5) {
       fightData.states[fightData.names[attackerIndex]].acuity += Math.floor(Math.random() * 10);

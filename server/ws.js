@@ -10,16 +10,18 @@ const port = process.env.PORT || 8080;
 
 let io;
 
-function emit(fightId, msg, user) {
-    console.log(`---EMIT @ ${fightId}---:`);
-    console.log(msg);
-    let target;
-    if (user) {
-        target = msg.fightData.sockets[user];
-    } else {
-        target = msg.fightData.id;
-    }
+function emit(fightId, msg, socket) {
+    console.log(`---EMIT ${msg.event} @ ${fightId}---:`);
+    let target = socket ? socket : fightId;
     io.to(target).emit('message', JSON.stringify(msg));
+}
+
+async function sendFightData(fightData) {
+    const response = {
+        event: 'fight/data',
+        fightData: fightData,
+    };
+    emit(fightData.id, response);
 }
 
 function setupSocketIO(server) {
@@ -72,5 +74,6 @@ function setupSocketIO(server) {
 export {
     io,
     emit,
+    sendFightData,
     setupSocketIO,
 };

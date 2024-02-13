@@ -123,6 +123,7 @@ function Fight() {
         const data = JSON.parse(msg);
         if (data.fightData) {
           setFightData(data.fightData);
+          console.log(data.fightData);
         }
         switch(data.event) {
           case 'fight/start':
@@ -133,14 +134,14 @@ function Fight() {
             break;
           case 'fight/output':
             console.log('fight/output:');
-            console.log(data.message);
-            writeToOutput(data.message.content, data.message.className);
+            const className = username === data.attacker ? 'player' : 'opponent'            
+            writeToOutput(data.message.content, className);
             break;
           case 'fight/roundStart':
-            writeToOutput(`=== START OF ROUND ${data.fightData.round} ===`);
+            writeToOutput(`=== START OF ROUND ${fightDataRef.current.round} ===`);
             break;
           case 'fight/roundEnd':
-            writeToOutput(`=== END OF ROUND ${data.fightData.round} ===`);
+            writeToOutput(`=== END OF ROUND ${fightDataRef.current.round} ===`);
             break;
           case 'fight/canAttack':
             setOptions({ list: data.options, query: 'attack' });
