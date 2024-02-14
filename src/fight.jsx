@@ -217,7 +217,9 @@ function Fight() {
     <>
       {error ? (
         <div>{error}</div>
-      ) : (fightData && fightData.names.length == 2) ? (
+      ) : !fightData ? (
+        <p>Waiting for opponent...</p>
+      ) : (
         <>
           <div id="header" className="header">
             <div id="vitals">
@@ -270,8 +272,6 @@ function Fight() {
           </div>)
           }
         </>
-      ) : (
-        <p>Waiting for opponent...</p>
       )}
     </>
   );
