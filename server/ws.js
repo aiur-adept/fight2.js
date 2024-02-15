@@ -1,13 +1,15 @@
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
-import { client, getFightData } from './db.js';
+import { client } from './db.js';
 
 import { handleMessage } from './handle-message.js'
 
 
 const port = process.env.PORT || 8080;
 const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
+
+console.log(`REDIS_HOST is ${REDIS_HOST}`);
 
 let io;
 
