@@ -7,6 +7,7 @@ import { handleMessage } from './handle-message.js'
 
 
 const port = process.env.PORT || 8080;
+const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 
 let io;
 
@@ -26,7 +27,7 @@ async function sendFightData(fightData) {
 
 function setupSocketIO(server) {
     io = new Server(server);
-    const pubClient = createClient({ url: "redis://localhost:6379" });
+    const pubClient = createClient({ url: `redis://${REDIS_HOST}:6379` });
     const subClient = pubClient.duplicate();
 
     Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
