@@ -100,7 +100,7 @@ function Fight() {
   useEffect(() => {
     const initWebSocket = async () => {
       const username = await openModal(TextInputModal, {
-        promptText: 'Enter your username',
+        promptText: 'Enter your fighter name',
       });
       setUsername(username);
 
