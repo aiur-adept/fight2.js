@@ -41,7 +41,7 @@ function Challenge() {
                 maxWidth: '80%',
               }}
             />
-            <button onClick={copyToClipboard}>Copy</button>
+            <button onClick={copyToClipboard}>Copy</button>&nbsp;
             <div>send this link to your opponent</div>
           </div>
           <Link to={url}>Join Fight</Link>
