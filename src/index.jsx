@@ -1,9 +1,10 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 
 import MainMenu from './main-menu';
+import PlayComputer from './play-computer';
 import CreateFighter from './create-fighter';
 import Challenge from './challenge';
 import Fight from './fight';
@@ -11,11 +12,13 @@ import Fight from './fight';
 import { ModalProvider } from './modal-context';
 
 async function main() {
-  ReactDOM.render(
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(
     <ModalProvider>
       <Router>
         <Routes>
           <Route path="/" element={<MainMenu/>} />
+          <Route path="/playcomputer" element={<PlayComputer/>} />
           <Route path="/fighter/create" element={<CreateFighter/>} />
           <Route path="/challenge" element={<Challenge/>} />
           <Route path="/fight/:uuid" element={<Fight/>} />
@@ -28,7 +31,7 @@ async function main() {
 
 // TODO: find somewhere else to put this?
 const adjustContentHeight = () => {
-  const content = document.getElementById('content');
+  const content = document.getElementById('root');
   const vh = window.innerHeight * 0.01;
   content.style.height = `${window.innerHeight}px`;
 };

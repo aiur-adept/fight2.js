@@ -14,7 +14,7 @@ const stoppage = (fightData, victor, method) => {
       className: "buffer",
     },
   ];
-  fightData.result = `${victor} by ${method} in round ${fightData.round}`;
+  fightData.resultDescription = `${victor} by ${method} in round ${fightData.round}`;
   fightData.status = 'finished';
 
   notifyStoppage(fightData, messages);
@@ -23,6 +23,7 @@ const stoppage = (fightData, victor, method) => {
 };
 
 function assignRoundScores(fightData) {
+  console.log("ASSIGNING ROUND SCORES");
   const scores = [];
   const roundPoints = fightData.roundPoints;
 
@@ -36,9 +37,9 @@ function assignRoundScores(fightData) {
       secondScore = 10;
       firstScore = 9;
     } else {
-      // if we're here, both players had the same round score. 0 if 0, otherwise 10.
-      firstScore = roundPoints[0] > 0 ? 10 : 0;
-      secondScore = roundPoints[0] > 0 ? 10 : 0;
+      // if we're here, both players had the same round score.
+      firstScore = 10;
+      secondScore = 10;
     }
 
     // random judge error
@@ -86,6 +87,8 @@ const judgeDecision = (fightData) => {
     { content: `After ${fightData.nRounds} rounds, we go to the judge's scorecards...`, className: "buffer" },
   ];
 
+  console.log(JSON.stringify(fightData, null, 2))
+
   // write scores out (victor number goes first)
   for (let i = 0; i < 3; i++) {
     const displayScores = [
@@ -116,6 +119,9 @@ const judgeDecision = (fightData) => {
     content: result === "draw" ? "This contest is declared a drawww!" : `... declaring the winner... ${victorName}!!!`,
     className: "buffer",
   });
+
+  fightData.resultDescription = `${victor} by judge's decision`;
+  fightData.status = 'finished';
 
   notifyJudgeDecision(fightData, messages);
 

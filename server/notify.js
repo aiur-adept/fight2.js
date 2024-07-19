@@ -6,11 +6,11 @@ export function notifyStartFight(fightData) {
 }
 
 export function notifyStartRound(fightData) {
-    emit(fightData.id, { event: 'fight/roundStart' });
+    emit(fightData.id, { fightData, event: 'fight/roundStart' });
 }
 
 export function notifyEndRound(fightData) {
-    emit(fightData.id, { event: 'fight/roundEnd' });
+    emit(fightData.id, { fightData, event: 'fight/roundEnd' });
 }
 
 export function notifyFeelOut(attackerName, fightData) {
@@ -52,13 +52,11 @@ export function notifyStoppage(fightData, messages) {
     emit(fightData.id, msg);
 }
 
-export function notifyJudgeDecision(fightData, messages) {
+export function notifyJudgeDecision(fightData, messages, result, victor) {
     const msg = {
         event: "fight/judgeDecision",
         messages: messages,
         result: result,
     };
-    fightData.result = `${victor} by judge's decision`;
-    fightData.status = 'finished';
     emit(fightData.id, msg);
 }

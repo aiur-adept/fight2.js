@@ -119,7 +119,6 @@ function Fight() {
       });
 
       websocket.on('message', (msg) => {
-        console.log(msg);
         const data = JSON.parse(msg);
         if (data.fightData) {
           setFightData(data.fightData);
@@ -130,7 +129,7 @@ function Fight() {
             console.log('FIGHT STARTS');
             break;
           case 'fight/data':
-            // nothing to do, since all messages bearing fight data are handled before this switch statement
+            setFightData(data.fightData);
             break;
           case 'fight/output':
             console.log('fight/output:');
@@ -138,10 +137,10 @@ function Fight() {
             writeToOutput(data.message.content, className);
             break;
           case 'fight/roundStart':
-            writeToOutput(`=== START OF ROUND ${fightDataRef.current.round} ===`);
+            writeToOutput(`=== START OF ROUND ${data.fightData.round} ===`);
             break;
           case 'fight/roundEnd':
-            writeToOutput(`=== END OF ROUND ${fightDataRef.current.round} ===`);
+            writeToOutput(`=== END OF ROUND ${data.fightData.round} ===`);
             break;
           case 'fight/canAttack':
             setOptions({ list: data.options, query: 'attack' });
@@ -171,6 +170,13 @@ function Fight() {
             }
             break;
           case 'fight/stoppage':
+            data.messages.forEach((message) => {
+              writeToOutput(message.content, message.className);
+            });
+            setOptions({ list: [], query: '' });
+            break;
+          case 'fight/judgeDecision':
+            console.log("JUDGE DECISION");
             data.messages.forEach((message) => {
               writeToOutput(message.content, message.className);
             });

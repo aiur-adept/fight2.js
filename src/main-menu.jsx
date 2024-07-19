@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const options = [
-  // { path: '/fighter/create', label: 'create fighter' },
+  { path: '/playcomputer', label: 'play computer' },
   { path: '/challenge', label: 'create challenge link' },
 ];
 

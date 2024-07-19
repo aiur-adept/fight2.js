@@ -10,7 +10,11 @@ html, body {
   font-size: 1.1em;
 }
 
-#content {
+h1 {
+  
+}
+
+#root {
   max-width: 500px; 
   width: 100%;
   display: flex;
