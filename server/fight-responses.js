@@ -53,6 +53,10 @@ async function tickTime(fightData) {
     // End this round
     notifyEndRound(fightData);
     assignRoundScores(fightData);
+    // reset round points for each player
+    for (let key of Object.keys(fightData.states)) {
+      fightData.states[key].roundPoints = 0;
+    }
     // advance round
     fightData.t = 0;
     fightData.round++;
@@ -109,6 +113,7 @@ async function fightJoin(socket, msg, fightData) {
       health: 20,
       acuity: 100,
       submissionProgress: 0,
+      roundPoints: 0,
     };
     const initiativeIx = Math.round(Math.random());
     fightData.initiative = initiativeIx;

@@ -25,8 +25,11 @@ const stoppage = (fightData, victor, method) => {
 function assignRoundScores(fightData) {
   console.log("ASSIGNING ROUND SCORES");
   const scores = [];
-  const roundPoints = fightData.roundPoints;
-
+  let roundPoints = [];
+  for (let name of fightData.names) {
+    roundPoints.push(fightData.states[name].roundPoints);
+  }
+  
   for (let i = 0; i < 3; i++) {
     let firstScore, secondScore;
 
@@ -62,9 +65,6 @@ function assignRoundScores(fightData) {
     fightData.judgeScores[i][0] += scores[i][0];
     fightData.judgeScores[i][1] += scores[i][1];
   }
-  // Reset point counters for the next round
-  fightData.roundPoints[0] = 0;
-  fightData.roundPoints[1] = 0;
 
   return fightData;
 }

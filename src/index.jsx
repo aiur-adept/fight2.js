@@ -24,8 +24,7 @@ async function main() {
           <Route path="/fight/:uuid" element={<Fight/>} />
         </Routes>
       </Router>
-    </ModalProvider>,
-    document.getElementById('content')
+    </ModalProvider>
   );
 }
 
