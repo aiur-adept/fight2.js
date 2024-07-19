@@ -11,7 +11,7 @@ export const createFightData = () => {
     names: [],
     sockets: {},
     round: 1,
-    roundTime: 5,
+    roundTime: 12,
     nRounds: 3,
     t: 0,
     states: {},
