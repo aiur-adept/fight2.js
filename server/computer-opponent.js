@@ -22,12 +22,14 @@ export const startComputerOpponentProcess = (fightData) => {
           case 'fight/canAttack':
             options = data.options;
             console.log(options);
-            websocket.send(JSON.stringify({ fightId, event: 'fight/attack', user, attack: options[0] }));
+            const randomOption = options[Math.floor(Math.random() * options.length)];
+            websocket.send(JSON.stringify({ fightId, event: 'fight/attack', user, attack: randomOption }));
             break;
           case 'fight/canBlock':
             options = data.options;
             console.log(options);
-            websocket.send(JSON.stringify({ fightId, event: 'fight/block', user, block: options[0] }));
+            const randomBlockOption = options[Math.floor(Math.random() * options.length)];
+            websocket.send(JSON.stringify({ fightId, event: 'fight/block', user, block: randomBlockOption }));
             break;
           case 'fight/end':
             console.log('fight ended: ', fightData.id)
