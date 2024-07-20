@@ -2,11 +2,10 @@ import { io } from 'socket.io-client';
 
 export const startComputerOpponentProcess = (fightData) => {
     const fightId = fightData.id;
-    console.log('computer opponent opening socket...');
     const websocket = io('http://localhost:8080');
     const user = "computer";
+
     websocket.on('connect', () => {
-        console.log('computer opponent joining fight ', fightId);
         websocket.send(JSON.stringify({ event: 'fight/join', username: user, fightId }));
     });
 
@@ -32,7 +31,6 @@ export const startComputerOpponentProcess = (fightData) => {
             }, 500);
             break;
           case 'fight/end':
-            console.log('fight ended: ', fightData.id)
             // disconnect the websocket
             websocket.disconnect();
             break;
