@@ -23,7 +23,6 @@ const stoppage = (fightData, victor, method) => {
 };
 
 function assignRoundScores(fightData) {
-  console.log("ASSIGNING ROUND SCORES");
   const scores = [];
   let roundPoints = [];
   for (let name of fightData.names) {
