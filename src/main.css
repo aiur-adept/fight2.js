@@ -66,7 +66,7 @@ h1 {
   justify-content: flex-start;
 }
 
-.row {
+.vitalRow {
   display: flex;
   flex-grow: 1;
   justify-content: center;
@@ -92,36 +92,36 @@ h1 {
   transform: translate(-50%, -50%);
 }
 
-#vitals .row.name {
+#vitals .vitalRow.name {
   color: white;
   background: black;
   font-weight: bold;
   justify-content: space-between;
 }
 
-#vitals .row.name .vital {
+#vitals .vitalRow.name .vital {
   max-width: 48%;
   overflow: hidden;
   text-overflow: ellipsis;
   flex: 1;
 }
 
-#vitals .row.name .vital.playerName {
+#vitals .vitalRow.name .vital.playerName {
   text-align: right;
 }
-#vitals .row.name .vital.opponentName {
+#vitals .vitalRow.name .vital.opponentName {
   text-align: left;
 }
 
-#vitals .row.health {
+#vitals .vitalRow.health {
   background-color: #ffdada;
   color: red;
 }
-#vitals .row.acuity {
+#vitals .vitalRow.acuity {
   background-color: #dadaff;
   color: blue;
 }
-#vitals .row.submission {
+#vitals .vitalRow.submission {
   background-color: #fffee6;
   color: #cda83b;
 }

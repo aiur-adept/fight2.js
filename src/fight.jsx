@@ -234,21 +234,21 @@ function Fight() {
         <>
           <div id="header" className="header">
             <div id="vitals">
-              <div className="row name">
+              <div className="vitalRow name">
                 <div className="vital opponentName">{opponentUsername}</div>
                 <div className="vital playerName">{username}</div>
               </div>
-              <div className="row health">
+              <div className="vitalRow health">
                 <div className="vital opponentHealth">{opponent.health}</div>
                 <div className="vital symbol">❤️</div>
                 <div className="vital playerHealth">{player.health}</div>
               </div>
-              <div className="row acuity">
+              <div className="vitalRow acuity">
                 <div className="vital opponentAcuity">{Math.round(opponent.acuity)}</div>
                 <div className="vital symbol">💡</div>
                 <div className="vital playerAcuity">{Math.round(player.acuity)}</div>
               </div>
-              <div className="row submission">
+              <div className="vitalRow submission">
                 <div className="vital opponentSubmission">
                   {Math.round(opponent.submissionProgress)}
                 </div>
