@@ -11,28 +11,30 @@ export const startComputerOpponentProcess = (fightData) => {
     });
 
     websocket.on('message', (msg) => {
-        console.log(msg);
         const data = JSON.parse(msg);
         if (data.fightData) {
           fightData = data.fightData;
         }
-        console.log(data);
         let options;
         switch(data.event) {
           case 'fight/canAttack':
             options = data.options;
-            console.log(options);
             const randomOption = options[Math.floor(Math.random() * options.length)];
-            websocket.send(JSON.stringify({ fightId, event: 'fight/attack', user, attack: randomOption }));
+            setTimeout(() => {
+              websocket.send(JSON.stringify({ fightId, event: 'fight/attack', user, attack: randomOption }));
+            }, 500);
             break;
           case 'fight/canBlock':
             options = data.options;
-            console.log(options);
             const randomBlockOption = options[Math.floor(Math.random() * options.length)];
-            websocket.send(JSON.stringify({ fightId, event: 'fight/block', user, block: randomBlockOption }));
+            setTimeout(() => {
+              websocket.send(JSON.stringify({ fightId, event: 'fight/block', user, block: randomBlockOption }));
+            }, 500);
             break;
           case 'fight/end':
             console.log('fight ended: ', fightData.id)
+            // disconnect the websocket
+            websocket.disconnect();
             break;
         }
         if (data.type === 'error') {

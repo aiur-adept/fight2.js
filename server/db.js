@@ -42,13 +42,11 @@ async function getFightData(fightId) {
  * @returns {Promise<void>} A promise that resolves when the operation is complete.
  */
 async function setFightData(fightId, fightData) {
-  console.log('Setting fight data...');
   // Serialize fightData to a JSON string
   const fightDataJson = JSON.stringify(fightData);
 
   try {
     await client.set(fightId, fightDataJson);
-    console.log(`Fight data saved for ${fightId}`);
   } catch (err) {
     console.error(`Error saving fight data to Redis: ${err}`);
     throw err; // Rethrow the error to handle it in the calling context

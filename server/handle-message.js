@@ -5,7 +5,6 @@ import { sendFightData } from './ws.js';
 
 async function handleMessage(socket, msg) {
     const { fightId } = msg;
-    console.log(`[${msg.event}]`);
 
     // get fight data
     const fightData = await getFightData(fightId);

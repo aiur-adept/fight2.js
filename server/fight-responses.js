@@ -26,9 +26,6 @@ import {
 
 import { io, emit, sendFightData } from './ws.js';
 
-import chalk from 'chalk';
-
-
 function updateAcuity(fightData) {
   const a = fightData.names[fightData.initiative];
   const aState = fightData.states[a];
@@ -43,8 +40,6 @@ function updateAcuity(fightData) {
 }
 
 async function tickTime(fightData) {
-  console.log(chalk.blue(`tick t=${fightData.t}`));
-
   updateAcuity(fightData);
 
   // Handle round time and progression
@@ -102,11 +97,8 @@ function canBlock(fightData, telegraphMoves) {
 
 async function fightJoin(socket, msg, fightData) {
   try {
-    console.log('[[join]]');
-    console.log(msg);
     const { fightId } = msg;
     socket.join(fightId);
-    console.log(`User ${socket.id} as ${msg.username} joined room: ${fightId}`);
 
     // set the user's fight stats (health, acuity, etc.) and username
     fightData.states[msg.username] = {
@@ -123,11 +115,9 @@ async function fightJoin(socket, msg, fightData) {
 
     // Check the room size after joining
     const roomSize = io.sockets.adapter.rooms.get(fightId)?.size || 0;
-    console.log(`Room ${fightId} size: ${roomSize}`);
 
     // If two users are in the room, start the fight
     if (roomSize === 2) {
-      console.log(`Fight started in room: ${fightId}`);
       await sendFightData(fightData);
       await notifyStartFight(fightData);
       await notifyStartRound(fightData);
@@ -139,8 +129,6 @@ async function fightJoin(socket, msg, fightData) {
 }
 
 async function fightAttack(socket, msg, fightData) {
-  console.log('[[attack]]');
-  console.log(msg);
 
   const realMove = msg.attack;
   const attacker = fightData.names[fightData.initiative];
@@ -167,8 +155,6 @@ async function fightAttack(socket, msg, fightData) {
 }
 
 async function fightBlock(socket, msg, fightData) {
-  console.log('[[block]]');
-  console.log(msg);
 
   const realMove = fightData.realMove;
   const userMove = msg.block;
