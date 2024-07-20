@@ -222,7 +222,12 @@ function Fight() {
   return (
     <>
       {error ? (
-        <div>{error}</div>
+        <div>
+          <div>{error}</div>
+          <p>
+            <button onClick={() => window.location.href = '/'}>Back to main menu</button>
+          </p>
+        </div>
       ) : !fightData ? (
         <p>Waiting for opponent...</p>
       ) : (
@@ -258,6 +263,7 @@ function Fight() {
           <div id="output" ref={outputRef}>
             {messages.map((message, index) => renderMessage(message, index))}
           </div>
+
           {showOptions && (
           <div id="options" className="footer">
             {options.query && <div className="query">{options.query}</div>}
@@ -277,6 +283,13 @@ function Fight() {
             </div>
           </div>)
           }
+
+          {fightEnded && (
+            <div className="footer">
+              <p>Fight ended.</p>
+              <p><button onClick={() => window.location.href = '/'}>Back to main menu</button></p>
+            </div>
+          )}
         </>
       )}
     </>
