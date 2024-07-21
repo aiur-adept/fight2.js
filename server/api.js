@@ -7,6 +7,14 @@ const app = express();
 
 app.use(express.json());
 
+app.get('/user', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json(req.user); // Send user info if authenticated
+  } else {
+    res.status(401).json({ message: 'Unauthorized' }); // Not authenticated
+  }
+});
+
 // Route to create a new fight session and return a unique UUID
 app.get('/challenge', async (req, res) => {
   const fightData = createFightData();

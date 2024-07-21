@@ -39,6 +39,7 @@ function setupSocketIO(server) {
             socket.on('message', (data) => {
                 try {
                     const msg = JSON.parse(data);
+                    console.log(`received message: ${JSON.stringify(msg)}`);
                     handleMessage(socket, msg);
                 } catch (error) {
                     console.log(`Error parsing message data from ${socket.id}:`, error);

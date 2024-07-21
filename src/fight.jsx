@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-
 import { io } from "socket.io-client";
-
 import ModalContext from './modal-context';
 import TextInputModal from './text-input-modal';
 
@@ -64,12 +62,32 @@ function Fight() {
   // ref needed to set scrollTop
   const outputRef = useRef(null);
 
+  // set player and opponent
+  useEffect(() => {
+    if (fightData) {
+      const playerUsername = username;
+      const opponentUsername = fightData.names.find((name) => name !== playerUsername);
+      setOpponentUsername(opponentUsername);
+      setPlayer(fightData.states[playerUsername]);
+      setOpponent(fightData.states[opponentUsername]);
+    }
+  }, [fightData, username]);
+
+  // used to send data to the server
   const sendWS = (payload) => {
     payload.fightId = fightData.id;
     payload.user = username;
     ws.send(JSON.stringify(payload))
   }
 
+  // used to render messages
+  const renderMessage = (message, index) => (
+    <div key={index} className={`message ${message.classes.join(' ')}`}>
+      <span className="pill" dangerouslySetInnerHTML={{ __html: message.text }}></span>
+    </div>
+  );
+
+  // used to write messages to the output
   const writeToOutput = (text, classes = 'info') => {
     const message = {
       text: text || '',
@@ -85,6 +103,7 @@ function Fight() {
     });
   };
 
+  // used to handle option clicks
   const handleOptionClick = async (option) => {
     let payload = {
       event: `fight/${options.query}`
@@ -97,19 +116,29 @@ function Fight() {
     }
   };
 
+  // used to initialize the websocket and setup handlers
   useEffect(() => {
+    const fetchUser = async () => {
+      const response = await fetch('/api/user');
+      if (response.ok) {
+        const userData = await response.json();
+        setUsername(userData.displayName); // Set username from logged-in user
+      } else {
+        // If not logged in, prompt for username
+        const username = await openModal(TextInputModal, {
+          promptText: 'Enter your fighter name',
+        });
+        setUsername(username);
+      }
+    };
+
     const initWebSocket = async () => {
-      const username = await openModal(TextInputModal, {
-        promptText: 'Enter your fighter name',
-      });
-      setUsername(username);
 
       const websocket = io(`${window.location.protocol}//${window.location.host}`);
       setWs(websocket);
 
       websocket.on('connect', () => {
-        console.log('joining fight...');
-        websocket.send(JSON.stringify({ event: 'fight/join', username, fightId: uuid }));
+        websocket.send(JSON.stringify({ event: 'fight/join', username: usernameRef.current, fightId: uuid }));
       });
 
       websocket.on('disconnect', () => {
@@ -126,13 +155,11 @@ function Fight() {
         console.log(data);
         switch(data.event) {
           case 'fight/start':
-            console.log('FIGHT STARTS');
             break;
           case 'fight/data':
             setFightData(data.fightData);
             break;
           case 'fight/output':
-            console.log('fight/output:');
             const className = username === data.attacker ? 'player' : 'opponent'            
             writeToOutput(data.message.content, className);
             break;
@@ -148,6 +175,7 @@ function Fight() {
           case 'fight/canBlock':
             setOptions({ list: data.options, query: 'block' });
             break;
+
           case 'fight/moveBlocked':
             if (data.fighter === username) {
               writeToOutput('blocked.', 'opponent block');
@@ -176,7 +204,6 @@ function Fight() {
             setOptions({ list: [], query: '' });
             break;
           case 'fight/judgeDecision':
-            console.log("JUDGE DECISION");
             data.messages.forEach((message) => {
               writeToOutput(message.content, message.className);
             });
@@ -198,26 +225,11 @@ function Fight() {
     };
 
     if (!ws) {
-      initWebSocket();
+      fetchUser().then(() => {
+        initWebSocket();
+      });
     }
-  }, [uuid, ws]);
-
-  useEffect(() => {
-    if (fightData) {
-      const playerUsername = username;
-      const opponentUsername = fightData.names.find((name) => name !== playerUsername);
-      setOpponentUsername(opponentUsername);
-      setPlayer(fightData.states[playerUsername]);
-      setOpponent(fightData.states[opponentUsername]);
-      console.log(`set player & opponent; player = ${playerUsername}, opponent = ${opponentUsername}`);
-    }
-  }, [fightData, username]);
-
-  const renderMessage = (message, index) => (
-    <div key={index} className={`message ${message.classes.join(' ')}`}>
-      <span className="pill" dangerouslySetInnerHTML={{ __html: message.text }}></span>
-    </div>
-  );
+  }, [uuid, ws, openModal]);
 
   return (
     <>
