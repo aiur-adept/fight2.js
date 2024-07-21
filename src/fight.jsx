@@ -160,7 +160,7 @@ function Fight() {
             setFightData(data.fightData);
             break;
           case 'fight/output':
-            const className = username === data.attacker ? 'player' : 'opponent'            
+            const className = usernameRef.current === data.attacker ? 'player' : 'opponent'            
             writeToOutput(data.message.content, className);
             break;
           case 'fight/roundStart':
@@ -177,7 +177,7 @@ function Fight() {
             break;
 
           case 'fight/moveBlocked':
-            if (data.fighter === username) {
+            if (data.fighter === usernameRef.current) {
               writeToOutput('blocked.', 'opponent block');
             } else {
               writeToOutput(`${data.move}`, 'opponent attempt');
@@ -185,7 +185,7 @@ function Fight() {
             }
             break;
           case 'fight/moveConnects':
-            const isPlayer = data.fighter === username;
+            const isPlayer = data.fighter === usernameRef.current;
             if (fightDataRef.current.mode === 'standing') {
               if (data.move === 'grapple') {
                 writeToOutput(`Takedown by ${isPlayer ? usernameRef.current : opponentUsernameRef.current}!`, 
