@@ -8,7 +8,7 @@ const path = require('path');
 module.exports = {
   mode: 'development',
   entry: './src/index.jsx',
-  devtool: 'source-map',
+  devtool: 'inline-source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].bundle.js',
