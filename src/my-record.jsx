@@ -35,6 +35,7 @@ function MyRecord() {
 
   return (
     <div>
+      <p><a href="/">Back to Main Menu</a></p>
       <h1>My Record</h1>
       <table>
         <thead>
