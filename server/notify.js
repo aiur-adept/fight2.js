@@ -57,11 +57,10 @@ export function notifyStoppage(fightData, messages) {
     emit(fightData.id, msg2);
 }
 
-export function notifyJudgeDecision(fightData, messages, result, victor) {
+export function notifyJudgeDecision(fightData, messages) {
     const msg = {
         event: "fight/judgeDecision",
         messages: messages,
-        result: result,
     };
     emit(fightData.id, msg);
     const msg2 = {

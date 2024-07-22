@@ -37,8 +37,12 @@ function Fight() {
   const [fightData, setFightData] = useState(null);
   const [player, setPlayer] = useState({});
   const [opponent, setOpponent] = useState({});
-  // TODO: replace with proper federated username injection
   const [username, setUsername] = useState(null);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const loggedInRef = useRef(loggedIn);
+  useEffect(() => {
+    loggedInRef.current = loggedIn;
+  }, [loggedIn]);
   const [opponentUsername, setOpponentUsername] = useState(null);
   const [messages, setMessages] = useState([]);
   const [options, setOptions] = useState({ list: [], query: '' });
@@ -123,6 +127,7 @@ function Fight() {
       if (response.ok) {
         const userData = await response.json();
         setUsername(userData.displayName); // Set username from logged-in user
+        setLoggedIn(true);
       } else {
         // If not logged in, prompt for username
         const username = await openModal(TextInputModal, {
@@ -211,7 +216,18 @@ function Fight() {
             break;
           case 'fight/end':
             setFightEnded(true);
-            // TODO: Do any other actions required when the fight ends; rematch button? main menu button?
+            // if we're logged in, send a request to /api/saveFight
+            if (loggedInRef.current) {
+              fetch('/api/saveFight', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data.fightData),
+              }).then(response => {
+                console.log("Fight record saved");
+              });
+            }
             break;
         }
         if (data.type === 'error') {

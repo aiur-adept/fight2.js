@@ -1,27 +1,5 @@
 import { notifyStoppage, notifyJudgeDecision } from './notify.js';
 
-const stoppage = (fightData, victor, method) => {
-  let victorName = victor;
-  victorName = victorName.toUpperCase();
-  const messages = [
-    { content: "-----", className: "breakline" },
-    {
-      content: `The referee has called a stop to the contest due to ${method} in round ${fightData.round}`,
-      className: "buffer",
-    },
-    {
-      content: `... declaring the winner... ${victorName}!!!`,
-      className: "buffer",
-    },
-  ];
-  fightData.resultDescription = `${victor} by ${method} in round ${fightData.round}`;
-  fightData.status = 'finished';
-
-  notifyStoppage(fightData, messages);
-
-  // TODO: fightAfterlife(fightData);
-};
-
 function assignRoundScores(fightData) {
   const scores = [];
   let roundPoints = [];
@@ -68,7 +46,28 @@ function assignRoundScores(fightData) {
   return fightData;
 }
 
-const judgeDecision = (fightData) => {
+const stoppage = async (fightData, victor, method) => {
+  let victorName = victor;
+  victorName = victorName.toUpperCase();
+  const messages = [
+    { content: "-----", className: "breakline" },
+    {
+      content: `The referee has called a stop to the contest due to ${method} in round ${fightData.round}`,
+      className: "buffer",
+    },
+    {
+      content: `... declaring the winner... ${victorName}!!!`,
+      className: "buffer",
+    },
+  ];
+  fightData.resultDescription = `${victor} by ${method} in round ${fightData.round}`;
+  fightData.status = 'finished';
+  fightData.victor = victor;
+
+  notifyStoppage(fightData, messages);
+};
+
+const judgeDecision = async (fightData) => {
   const names = fightData.names;
   let playerTotal = 0;
   let opponentTotal = 0;
@@ -85,8 +84,6 @@ const judgeDecision = (fightData) => {
     { content: "-----", className: "breakline" },
     { content: `After ${fightData.nRounds} rounds, we go to the judge's scorecards...`, className: "buffer" },
   ];
-
-  console.log(JSON.stringify(fightData, null, 2))
 
   // write scores out (victor number goes first)
   for (let i = 0; i < 3; i++) {
@@ -119,12 +116,11 @@ const judgeDecision = (fightData) => {
     className: "buffer",
   });
 
-  fightData.resultDescription = `${victor} by judge's decision`;
+  fightData.resultDescription = result === "draw" ? "draw" : `${victor} by judge's decision`;
   fightData.status = 'finished';
+  fightData.victor = victor;
 
   notifyJudgeDecision(fightData, messages);
-
-  // TODO: fightAfterlife(fightData);
 };
 
 export {

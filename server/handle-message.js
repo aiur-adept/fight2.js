@@ -1,6 +1,6 @@
 import { fightJoin, fightResponses } from './fight-responses.js';
 import { stoppage } from './victory.js';
-import { getFightData, setFightData } from './db.js';
+import { getFightData, setFightData } from './redis.js';
 import { sendFightData } from './ws.js';
 
 async function handleMessage(socket, msg) {

@@ -1,61 +1,29 @@
-import { createClient } from 'redis';
+import { MongoClient } from 'mongodb';
 
-const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
+const url = 'mongodb://localhost:27017'; 
+const dbName = 'fight2'; 
+const collectionName = 'fightrecords'; 
 
-// Create a Redis client
-const client = createClient({
-  url: `redis://${REDIS_HOST}:6379`
-});
+async function saveFightRecord(email, name, fightData) {
+  let client;
 
-client.on('error', (err) => console.log('Redis Client Error', err));
+  const { victor, resultDescription, names } = fightData;
 
-// Connect to Redis
-(async () => {
-  await client.connect();
-})();
-
-/**
- * Fetches fight data from Redis by fightId.
- * @param {string} fightId The UUID of the fight to fetch data for.
- * @returns {Promise<Object>} A promise that resolves to the fight data object.
- */
-async function getFightData(fightId) {
   try {
-    const fightDataJson = await client.get(fightId);
-    if (!fightDataJson) {
-      throw new Error(`Fight data not found for id: ${fightId}`);
-    }
-    // Parse the JSON string back into a JavaScript object
-    const fightData = JSON.parse(fightDataJson);
-    return fightData;
+    client = await MongoClient.connect(url);
+    const db = client.db(dbName);
+    const collection = db.collection(collectionName);
+
+    const document = {email, name, victor, resultDescription, names};
+    await collection.insertOne(document);
   } catch (error) {
-    console.error(`Error retrieving or parsing fight data from Redis: ${error}`);
-    throw error; // Rethrow the error to handle it in the calling context
+    console.error('Failed to insert fight record:', error);
+  } finally {
+    if (client) {
+      await client.close();
+    }
   }
 }
 
+export { saveFightRecord };
 
-/**
- * Saves fight data to Redis.
- * @param {string} fightId The UUID of the fight.
- * @param {Object} fightData The fight data object to save.
- * @returns {Promise<void>} A promise that resolves when the operation is complete.
- */
-async function setFightData(fightId, fightData) {
-  // Serialize fightData to a JSON string
-  const fightDataJson = JSON.stringify(fightData);
-
-  try {
-    await client.set(fightId, fightDataJson);
-  } catch (err) {
-    console.error(`Error saving fight data to Redis: ${err}`);
-    throw err; // Rethrow the error to handle it in the calling context
-  }
-}
-
-
-export {
-  client,
-  getFightData,
-  setFightData,
-};

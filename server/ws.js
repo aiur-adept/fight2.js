@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { createClient } from "redis";
-import { client } from './db.js';
+import { client } from './redis.js';
 
 import { handleMessage } from './handle-message.js'
 
