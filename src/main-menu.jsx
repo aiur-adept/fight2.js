@@ -26,14 +26,19 @@ const MainMenu = () => {
       {user ? (
         <div>
           <p>Welcome, {user.displayName}!</p>
-          <a href="/logout">Logout</a>
+          <p>
+            <a href="/logout">logout</a>
+          </p>
+          <p>
+            <a href="/myrecord">my record</a>
+          </p>
         </div>
       ) : (
-        <a href="/auth/google">Login with Google</a>
+        <p><a href="/auth/google">Login with Google</a></p>
       )}
       {options.map((option) => (
         <div key={option.path} className="option">
-          <Link to={option.path}>{option.label}</Link>
+          <p><Link to={option.path}>{option.label}</Link></p>
         </div>
       ))}
     </div>

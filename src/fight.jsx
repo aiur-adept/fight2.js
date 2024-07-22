@@ -38,11 +38,7 @@ function Fight() {
   const [player, setPlayer] = useState({});
   const [opponent, setOpponent] = useState({});
   const [username, setUsername] = useState(null);
-  const [loggedIn, setLoggedIn] = useState(false);
-  const loggedInRef = useRef(loggedIn);
-  useEffect(() => {
-    loggedInRef.current = loggedIn;
-  }, [loggedIn]);
+  const [email, setEmail] = useState(null);
   const [opponentUsername, setOpponentUsername] = useState(null);
   const [messages, setMessages] = useState([]);
   const [options, setOptions] = useState({ list: [], query: '' });
@@ -52,6 +48,7 @@ function Fight() {
   // refs for use in websocket handler
   const fightDataRef = useRef(null);
   const usernameRef = useRef(null);
+  const emailRef = useRef(null);
   const opponentUsernameRef = useRef(null);
   useEffect(() => {
     fightDataRef.current = fightData;
@@ -59,6 +56,9 @@ function Fight() {
   useEffect(() => {
     usernameRef.current = username;
   }, [username]);
+  useEffect(() => {
+    emailRef.current = email;
+  }, [email]);
   useEffect(() => {
     opponentUsernameRef.current = opponentUsername;
   }, [opponentUsername]);
@@ -127,7 +127,7 @@ function Fight() {
       if (response.ok) {
         const userData = await response.json();
         setUsername(userData.displayName); // Set username from logged-in user
-        setLoggedIn(true);
+        setEmail(userData.email);
       } else {
         // If not logged in, prompt for username
         const username = await openModal(TextInputModal, {
@@ -143,7 +143,7 @@ function Fight() {
       setWs(websocket);
 
       websocket.on('connect', () => {
-        websocket.send(JSON.stringify({ event: 'fight/join', username: usernameRef.current, fightId: uuid }));
+        websocket.send(JSON.stringify({ event: 'fight/join', username: usernameRef.current, email: emailRef.current, fightId: uuid }));
       });
 
       websocket.on('disconnect', () => {
@@ -216,18 +216,6 @@ function Fight() {
             break;
           case 'fight/end':
             setFightEnded(true);
-            // if we're logged in, send a request to /api/saveFight
-            if (loggedInRef.current) {
-              fetch('/api/saveFight', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data.fightData),
-              }).then(response => {
-                console.log("Fight record saved");
-              });
-            }
             break;
         }
         if (data.type === 'error') {

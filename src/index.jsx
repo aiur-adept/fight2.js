@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 
 import MainMenu from './main-menu';
+import MyRecord from './my-record';
 import PlayComputer from './play-computer';
 import CreateFighter from './create-fighter';
 import Challenge from './challenge';
@@ -18,6 +19,7 @@ async function main() {
       <Router>
         <Routes>
           <Route path="/" element={<MainMenu/>} />
+          <Route path="/myrecord" element={<MyRecord/>} />
           <Route path="/playcomputer" element={<PlayComputer/>} />
           <Route path="/fighter/create" element={<CreateFighter/>} />
           <Route path="/challenge" element={<Challenge/>} />

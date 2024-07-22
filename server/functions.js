@@ -9,6 +9,7 @@ export const createFightData = () => {
     id: fightId,
     url: fightUrl,
     names: [],
+    emails: {},
     sockets: {},
     round: 1,
     roundTime: 12,

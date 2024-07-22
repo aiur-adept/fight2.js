@@ -1,3 +1,8 @@
 node_modules/
 dist/
 oauth_client.json
+
+# Ignore everything in mongo-data
+mongo-data/*
+# But keep the .hidden file
+!mongo-data/.hidden

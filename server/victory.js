@@ -1,5 +1,8 @@
 import { notifyStoppage, notifyJudgeDecision } from './notify.js';
 
+import { saveFightRecord } from './db.js';
+
+
 function assignRoundScores(fightData) {
   const scores = [];
   let roundPoints = [];
@@ -65,19 +68,19 @@ const stoppage = async (fightData, victor, method) => {
   fightData.victor = victor;
 
   notifyStoppage(fightData, messages);
+  await saveFightRecord(fightData);
 };
 
 const judgeDecision = async (fightData) => {
   const names = fightData.names;
-  let playerTotal = 0;
-  let opponentTotal = 0;
+  let player0Total = 0;
+  let player1Total = 0;
 
   // figure out victor
   for (let i = 0; i < 3; i++) {
-    playerTotal += fightData.judgeScores[i][0];
-    opponentTotal += fightData.judgeScores[i][1];
+    player0Total += fightData.judgeScores[i][0];
+    player1Total += fightData.judgeScores[i][1];
   }
-  let victorIx = (playerTotal > opponentTotal) ? 0 : 1;
 
   // Prepare messages
   const messages = [
@@ -98,29 +101,30 @@ const judgeDecision = async (fightData) => {
   }
 
   // Determine the result
-  let result;
-  if (playerTotal > opponentTotal) {
-    result = "player";
-  } else if (playerTotal < opponentTotal) {
-    result = "opponent";
+  let isDraw, victor, victorName;
+  if (player0Total > player1Total) {
+    victor = names[0];
+    victorName = victor.toUpperCase();
+  } else if (player0Total < player1Total) {
+    victor = names[1];
+    victorName = victor.toUpperCase();
   } else {
-    result = "draw";
+    isDraw = true;
+    victor = null;
+    victorName = null;
   }
 
-  const victor = names[victorIx];
-  let victorName = victor;
-  victorName = victorName.toUpperCase();
-
   messages.push({
-    content: result === "draw" ? "This contest is declared a drawww!" : `... declaring the winner... ${victorName}!!!`,
+    content: isDraw ? "This contest is declared a drawww!" : `... declaring the winner... ${victorName}!!!`,
     className: "buffer",
   });
 
-  fightData.resultDescription = result === "draw" ? "draw" : `${victor} by judge's decision`;
+  fightData.resultDescription = isDraw ? "draw" : `${victor} by judge's decision`;
   fightData.status = 'finished';
   fightData.victor = victor;
 
   notifyJudgeDecision(fightData, messages);
+  await saveFightRecord(fightData);
 };
 
 export {

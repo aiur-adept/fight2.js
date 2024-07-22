@@ -107,6 +107,7 @@ async function fightJoin(socket, msg, fightData) {
       submissionProgress: 0,
       roundPoints: 0,
     };
+    fightData.emails[msg.username] = msg.email;
     const initiativeIx = Math.round(Math.random());
     fightData.initiative = initiativeIx;
     fightData.names.push(msg.username);
