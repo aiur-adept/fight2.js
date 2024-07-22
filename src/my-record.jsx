@@ -46,7 +46,7 @@ function MyRecord() {
         </thead>
         <tbody>
           {records.map((record, index) => (
-            <tr key={record._id.$oid} style={{ backgroundColor: record.victor ? (record.victor === record.name ? '#ccffcc' : '#ffcccc') : 'none' }}>
+            <tr key={record._id && record._id.$oid ? record._id.$oid : index} style={{ backgroundColor: record.victor ? (record.victor === record.name ? '#ccffcc' : '#ffcccc') : 'none' }}>
               <td>{record.names.join(' vs ')}</td>
               <td>{record.resultDescription}</td>
             </tr>
