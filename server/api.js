@@ -1,6 +1,6 @@
 import express from 'express';
 import { setFightData } from './redis.js';
-import { getFightsByEmail } from './db.js';
+import { getFightsByEmail, getRecordSummaries, getLeaders } from './db.js';
 import { createFightData } from './functions.js';
 import { startComputerOpponentProcess } from './computer-opponent.js';
 
@@ -45,6 +45,22 @@ app.get('/myrecord', async (req, res) => {
   } else {
     res.status(401).json({ message: 'Unauthorized' }); // Not authenticated
   }
+});
+
+app.get('/recordSummaries', async (req, res) => {
+  if (req.isAuthenticated()) {
+    const userEmail = req.user.email;
+    const userName = req.user.displayName;
+    const recordSummaries = await getRecordSummaries(userEmail, userName);
+    res.json(recordSummaries);
+  } else {
+    res.status(401).json({ message: 'Unauthorized' }); // Not authenticated
+  }
+});
+
+app.get('/leaderboard', async (req, res) => {
+  const leaders = await getLeaders();
+  res.json(leaders);
 });
 
 export default app;

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 const options = [
   { path: '/playcomputer', label: 'play computer' },
   { path: '/challenge', label: 'create challenge link' },
+  { path: '/leaderboard', label: 'leaderboard' },
 ];
 
 const MainMenu = () => {

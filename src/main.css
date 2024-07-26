@@ -297,3 +297,25 @@ h1 {
   width: 100%;
   box-sizing: border-box;
 }
+
+#myRecordTable {
+  width: 100%;
+}
+
+#myRecordTable th {
+  background-color: #f0f0f0;
+  color: black;
+}
+
+#myRecordTable td {
+  border: 1px solid #ccc;
+}
+
+#leaderBoardTable {
+  width: 100%;
+}
+
+#leaderBoardTable th {
+  background-color: #f0f0f0;
+  color: black;
+}

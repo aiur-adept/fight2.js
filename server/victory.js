@@ -89,6 +89,7 @@ const judgeDecision = async (fightData) => {
   ];
 
   // write scores out (victor number goes first)
+  let victorIx = player0Total > player1Total ? 0 : 1;
   for (let i = 0; i < 3; i++) {
     const displayScores = [
       fightData.judgeScores[i][victorIx],

@@ -12,7 +12,7 @@ export const createFightData = () => {
     emails: {},
     sockets: {},
     round: 1,
-    roundTime: 12,
+    roundTime: 1,
     nRounds: 3,
     t: 0,
     states: {},

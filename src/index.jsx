@@ -6,8 +6,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainMenu from './main-menu';
 import MyRecord from './my-record';
 import PlayComputer from './play-computer';
-import CreateFighter from './create-fighter';
 import Challenge from './challenge';
+import LeaderBoard from './leader-board';
 import Fight from './fight';
 
 import { ModalProvider } from './modal-context';
@@ -21,8 +21,8 @@ async function main() {
           <Route path="/" element={<MainMenu/>} />
           <Route path="/myrecord" element={<MyRecord/>} />
           <Route path="/playcomputer" element={<PlayComputer/>} />
-          <Route path="/fighter/create" element={<CreateFighter/>} />
           <Route path="/challenge" element={<Challenge/>} />
+          <Route path="/leaderboard" element={<LeaderBoard/>} />
           <Route path="/fight/:uuid" element={<Fight/>} />
         </Routes>
       </Router>
