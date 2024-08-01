@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb';
 
-const url = 'mongodb://localhost:27017';
+const url = process.env.MONGO_URL || 'mongodb://localhost:27017';
 const dbName = 'fight2';
 
 async function saveFightRecord(fightData) {
