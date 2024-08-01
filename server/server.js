@@ -18,7 +18,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 import { readFileSync } from 'fs';
-const oauth_client = JSON.parse(readFileSync(path.join(__dirname, 'oauth_client.json'), 'utf8'));
+const oauth_client_filename = path.join('/etc/secrets', 'oauth_client.json');
+const oauth_client = JSON.parse(readFileSync(oauth_client_filename, 'utf8'));
 
 const port = process.env.PORT || 8080;
 
@@ -76,8 +77,10 @@ app.get('/auth/google/callback',
 );
 
 app.get('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
+  req.logout((err) => {
+    if (err) { return next(err); }
+    res.redirect('/');
+  });
 });
 
 

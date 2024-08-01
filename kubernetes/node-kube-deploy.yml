@@ -25,6 +25,14 @@ spec:
           value: "mongodb://mongodb-service:27017"
         - name: PORT
           value: "8080"
+        volumeMounts:
+        - name: secret-volume
+          mountPath: "/etc/secrets"
+          readOnly: true
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: oauth-client-secret
 ---
 apiVersion: v1
 kind: Service
