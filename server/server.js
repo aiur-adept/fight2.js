@@ -5,17 +5,20 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
 import session from 'express-session';
+import MongoStore from 'connect-mongo'
+
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
 import apiRouter from './api.js';
 import { setupSocketIO } from './ws.js';
 
-import oauth_client from './oauth_client.json' assert { type: "json" };
-
 // Deriving __dirname and __filename in ES module scope
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+import { readFileSync } from 'fs';
+const oauth_client = JSON.parse(readFileSync(path.join(__dirname, 'oauth_client.json'), 'utf8'));
 
 const port = process.env.PORT || 8080;
 
@@ -34,7 +37,16 @@ setupSocketIO(server);
 //
 // passport
 //
-app.use(session({ secret: 'your_secret_key', resave: false, saveUninitialized: true }));
+const options = {
+  mongoUrl: process.env.MONGO_URL || 'mongodb://localhost:27017',
+  collectionName: 'sessions'
+}
+app.use(session({
+  secret: 'foo',
+  store: MongoStore.create(options),
+  resave: false,
+  saveUninitialized: false
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 
