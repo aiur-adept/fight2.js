@@ -17,4 +17,6 @@ A wonderful game of violence
 
 2. deploy the oauth client json with `kubectl create secret generic oauth-client-secret --from-file=oauth_client.json=/path/to/your/oauth_client.json`
 
-3. Deploy using the `/kubernetes` yml's
+3. deploy the grafana password secret with `kubectl create secret generic grafana-secret --from-literal=admin-password='YourSecurePassword'`
+
+4. Deploy using the `/kubernetes` yml's
