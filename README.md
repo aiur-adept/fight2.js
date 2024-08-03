@@ -19,4 +19,6 @@ A wonderful game of violence
 
 3. deploy the grafana password secret with `kubectl create secret generic grafana-secret --from-literal=admin-password='YourSecurePassword'`
 
-4. Deploy using the `/kubernetes` yml's
+4. create monitoring namespace `kubectl create namespace monitoring`
+
+5. Deploy using the `/kubernetes` yml's
