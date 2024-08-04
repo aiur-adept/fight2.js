@@ -21,4 +21,6 @@ A wonderful game of violence
 
 4. create monitoring namespace `kubectl create namespace monitoring`
 
-5. Deploy using the `/kubernetes` yml's
+5. create grafana dashboard config map `kubectl create configmap grafana-node-exporter-dashboard --from-file=grafana/node-exporter-full.json`
+
+6. Deploy using the `/kubernetes` yml's
