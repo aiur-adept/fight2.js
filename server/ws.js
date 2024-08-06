@@ -51,9 +51,9 @@ function setupSocketIO(server) {
         });
 
         io.of("/").adapter.on("leave-room", async (room) => {
-            // console.log(`room ${room} had a leave-room event`);
-            if (io.sockets.adapter.rooms.get(room).size == 0) {
-                // console.log(`no users left in room ${room}, deleting fightData...`);
+            const roomDetails = io.sockets.adapter.rooms.get(room);
+            emit(room, { event: 'fight/leave-room' });
+            if (roomDetails && roomDetails.size == 0) {
                 await client.del(room);
             }
         });

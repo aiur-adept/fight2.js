@@ -18,7 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 import { readFileSync } from 'fs';
-const oauth_client_filename = path.join('/etc/secrets', 'oauth_client.json');
+const oauth_client_filename = path.join(process.env['environment'] === 'production' ? '/etc/secrets' : __dirname, 'oauth_client.json');
 const oauth_client = JSON.parse(readFileSync(oauth_client_filename, 'utf8'));
 
 const port = process.env.PORT || 8080;

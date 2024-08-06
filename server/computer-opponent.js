@@ -34,6 +34,10 @@ export const startComputerOpponentProcess = (fightData) => {
             // disconnect the websocket
             websocket.disconnect();
             break;
+          case 'fight/leave-room':
+            // disconnect the websocket
+            websocket.disconnect();
+            break;
         }
         if (data.type === 'error') {
           console.error(data.message);
