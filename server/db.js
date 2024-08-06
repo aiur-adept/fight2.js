@@ -9,6 +9,9 @@ async function saveFightRecord(fightData) {
   const { victor, resultDescription, names } = fightData;
 
   for (const [name, email] of Object.entries(fightData.emails)) {
+    if (email == null) {
+      continue;
+    }
     MongoClient.connect(url)
       .then(client => {
         // insert the fight record
