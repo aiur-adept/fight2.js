@@ -69,6 +69,15 @@ function Fight() {
     }
   }, [fightData, username]);
 
+  // Set #output maxHeight to 50% on fight end
+  useEffect(() => {
+    if (fightEnded && outputRef.current) {
+      outputRef.current.style.maxHeight = '50%';
+    } else if (outputRef.current) {
+      outputRef.current.style.maxHeight = '';
+    }
+  }, [fightEnded]);
+
   const sendWS = (payload) => {
     payload.fightId = fightData.id;
     payload.user = username;
@@ -261,7 +270,10 @@ function Fight() {
             </div>
             <div id="round">{formatRoundDisplay(fightData.round)}</div>
           </div>
-          <div id="output" ref={outputRef}>
+          <div
+            id="output"
+            ref={outputRef}
+          >
             {messages.map((message, index) => renderMessage(message, index))}
           </div>
 
