@@ -8,7 +8,6 @@ function formatRoundDisplay(round) {
   const maxRound = 3;
   const emptySpace = "-";
   const goldColor = { color: "gold" };
-
   const roundDisplay = Array.from({ length: maxRound }, (v, i) =>
     i + 1 === round ? (
       <span key={i} style={goldColor}>
@@ -24,8 +23,12 @@ function formatRoundDisplay(round) {
       </span>
     )
   );
-
   return roundDisplay;
+}
+
+function truncateName(name) {
+  if (!name) return '';
+  return name.length > 18 ? name.slice(0, 18) : name;
 }
 
 function Fight() {
@@ -45,28 +48,17 @@ function Fight() {
   const [showOptions, setShowOptions] = useState(true);
   const [fightEnded, setFightEnded] = useState(false);
 
-  // refs for use in websocket handler
   const fightDataRef = useRef(null);
   const usernameRef = useRef(null);
   const emailRef = useRef(null);
   const opponentUsernameRef = useRef(null);
-  useEffect(() => {
-    fightDataRef.current = fightData;
-  }, [fightData]);
-  useEffect(() => {
-    usernameRef.current = username;
-  }, [username]);
-  useEffect(() => {
-    emailRef.current = email;
-  }, [email]);
-  useEffect(() => {
-    opponentUsernameRef.current = opponentUsername;
-  }, [opponentUsername]);
+  useEffect(() => { fightDataRef.current = fightData; }, [fightData]);
+  useEffect(() => { usernameRef.current = username; }, [username]);
+  useEffect(() => { emailRef.current = email; }, [email]);
+  useEffect(() => { opponentUsernameRef.current = opponentUsername; }, [opponentUsername]);
 
-  // ref needed to set scrollTop
   const outputRef = useRef(null);
 
-  // set player and opponent
   useEffect(() => {
     if (fightData) {
       const playerUsername = username;
@@ -77,21 +69,18 @@ function Fight() {
     }
   }, [fightData, username]);
 
-  // used to send data to the server
   const sendWS = (payload) => {
     payload.fightId = fightData.id;
     payload.user = username;
     ws.send(JSON.stringify(payload))
   }
 
-  // used to render messages
   const renderMessage = (message, index) => (
     <div key={index} className={`message ${message.classes.join(' ')}`}>
       <span className="pill" dangerouslySetInnerHTML={{ __html: message.text }}></span>
     </div>
   );
 
-  // used to write messages to the output
   const writeToOutput = (text, classes = 'info') => {
     const message = {
       text: text || '',
@@ -107,7 +96,6 @@ function Fight() {
     });
   };
 
-  // used to handle option clicks
   const handleOptionClick = async (option) => {
     let payload = {
       event: `fight/${options.query}`
@@ -120,25 +108,23 @@ function Fight() {
     }
   };
 
-  // used to initialize the websocket and setup handlers
   useEffect(() => {
     const fetchUser = async () => {
       const response = await fetch('/api/user');
       if (response.ok) {
         const userData = await response.json();
-        setUsername(userData.displayName); // Set username from logged-in user
+        setUsername(truncateName(userData.displayName));
         setEmail(userData.email);
       } else {
-        // If not logged in, prompt for username
-        const username = await openModal(TextInputModal, {
+        let username = await openModal(TextInputModal, {
           promptText: 'Enter your fighter name',
         });
+        username = truncateName(username);
         setUsername(username);
       }
     };
 
     const initWebSocket = async () => {
-
       const websocket = io(`${window.location.protocol}//${window.location.host}`);
       setWs(websocket);
 
@@ -180,7 +166,6 @@ function Fight() {
           case 'fight/canBlock':
             setOptions({ list: data.options, query: 'block' });
             break;
-
           case 'fight/moveBlocked':
             if (data.fighter === usernameRef.current) {
               writeToOutput('blocked.', 'opponent block');
@@ -251,8 +236,8 @@ function Fight() {
           <div id="header" className="header">
             <div id="vitals">
               <div className="vitalRow name">
-                <div className="vital opponentName">{opponentUsername}</div>
-                <div className="vital playerName">{username}</div>
+                <div className="vital opponentName">{truncateName(opponentUsername)}</div>
+                <div className="vital playerName">{truncateName(username)}</div>
               </div>
               <div className="vitalRow health">
                 <div className="vital opponentHealth">{opponent.health || 0}</div>
@@ -280,30 +265,73 @@ function Fight() {
             {messages.map((message, index) => renderMessage(message, index))}
           </div>
 
-          {showOptions && (
-          <div id="options" className="footer">
-            {options.query && <div className="query">{options.query}</div>}
-            <div className="grid">
-              <div className="gridList">
-                {options.list.map((option, index) => (
-                  <div
-                    key={index}
-                    className="clickable-option"
-                    data-value={index + 1}
-                    onClick={() => handleOptionClick(option)}
-                  >
-                    <div className="label">{option}</div>
-                  </div>
-                ))}
+          {!fightEnded && showOptions && (
+            <div id="options" className="footer">
+              {options.query && <div className="query">{options.query}</div>}
+              <div className="grid">
+                <div className="gridList">
+                  {options.list.map((option, index) => (
+                    <div
+                      key={index}
+                      className="clickable-option"
+                      data-value={index + 1}
+                      onClick={() => handleOptionClick(option)}
+                    >
+                      <div className="label">{option}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>)
-          }
+          )}
 
           {fightEnded && (
-            <div className="footer">
-              <p>Fight ended.</p>
-              <p><button onClick={() => window.location.href = '/'}>Back to main menu</button></p>
+            <div className="footer" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              padding: 24,
+              background: '#fff',
+              borderTop: '1px solid #e0e0e0',
+              boxShadow: '0 -2px 8px rgba(60, 64, 67, 0.04)'
+            }}>
+              <div style={{
+                fontFamily: 'Roboto, Arial, sans-serif',
+                fontWeight: 500,
+                fontSize: 20,
+                color: '#1976d2',
+                marginBottom: 16,
+                letterSpacing: 0.2
+              }}>
+                Fight ended
+              </div>
+              <button
+                onClick={() => window.location.href = '/'}
+                style={{
+                  background: '#1976d2',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 4,
+                  padding: '12px 28px',
+                  fontSize: 16,
+                  fontWeight: 500,
+                  fontFamily: 'Roboto, Arial, sans-serif',
+                  boxShadow: '0 2px 8px rgba(25, 118, 210, 0.10)',
+                  cursor: 'pointer',
+                  transition: 'background 0.18s, box-shadow 0.18s',
+                  outline: 'none'
+                }}
+                onMouseOver={e => {
+                  e.currentTarget.style.background = '#1565c0';
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(25, 118, 210, 0.16)';
+                }}
+                onMouseOut={e => {
+                  e.currentTarget.style.background = '#1976d2';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(25, 118, 210, 0.10)';
+                }}
+              >
+                Back to main menu
+              </button>
             </div>
           )}
         </>

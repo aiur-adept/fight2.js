@@ -19,7 +19,11 @@ export function ModalProvider({ children }) {
   <ModalContext.Provider value={{ openModal, closeModal }}>
     {children}
     {modal && (
-      <modal.component {...modal.props} closeModal={closeModal} resolve={modal.resolve} />
+      <div className="modal-overlay">
+        <div className="modal-container">
+          <modal.component {...modal.props} closeModal={closeModal} resolve={modal.resolve} />
+        </div>
+      </div>
     )}
   </ModalContext.Provider>
   );

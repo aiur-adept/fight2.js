@@ -7,7 +7,13 @@ async function handleMessage(socket, msg) {
     const { fightId } = msg;
 
     // get fight data
-    const fightData = await getFightData(fightId);
+    let fightData;
+    try {
+        fightData = await getFightData(fightId);
+    } catch (err) {
+        console.error(err);
+        return;
+    }
 
     if (msg.event == 'fight/join') {
         fightJoin(socket, msg, fightData);
