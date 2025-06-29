@@ -2,19 +2,22 @@
 FROM node:20
 
 # Set the working directory in the container
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy the current directory contents into the container at /usr/src/app
-COPY . .
+# Copy package.json and package-lock.json first for better caching
+COPY package*.json ./
 
-# Install any needed packages specified in package.json
+# Install dependencies
 RUN npm install
 
-# Make port 3000 available to the world outside this container
-EXPOSE 3000
+# Copy the rest of the application
+COPY . .
+
+# Expose port 8080 to match the application
+EXPOSE 8080
 
 # Define environment variable
-ENV NODE_ENV=production
+ENV NODE_ENV=development
 
-# Run server.js when the container launches
-CMD ["node", "server/server.js"]
+# The command will be overridden by docker-compose for development
+CMD ["npm", "run", "devserver"]

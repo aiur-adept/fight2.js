@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    container_name: my-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    container_name: my-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-data:/data/db
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_DATABASE=fight2
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fight2-app
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - MONGO_URL=mongodb://mongodb:27017
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - mongodb
+    restart: unless-stopped
+    command: npm run devserver
+
+volumes:
+  redis_data: 

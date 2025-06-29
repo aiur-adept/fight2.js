@@ -84,12 +84,6 @@ function Fight() {
     ws.send(JSON.stringify(payload))
   }
 
-  const renderMessage = (message, index) => (
-    <div key={index} className={`message ${message.classes.join(' ')}`}>
-      <span className="pill" dangerouslySetInnerHTML={{ __html: message.text }}></span>
-    </div>
-  );
-
   const writeToOutput = (text, classes = 'info') => {
     const message = {
       text: text || '',
@@ -274,7 +268,11 @@ function Fight() {
             id="output"
             ref={outputRef}
           >
-            {messages.map((message, index) => renderMessage(message, index))}
+            {messages.map((message, index) => (
+              <div key={index} className={`message ${message.classes.join(' ')}`}>
+                <span className="pill">{message.text}</span>
+              </div>
+            ))}
           </div>
 
           {!fightEnded && showOptions && (

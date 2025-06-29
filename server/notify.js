@@ -17,7 +17,7 @@ export function notifyFeelOut(attackerName, fightData) {
     const msg = {
         event: "fight/output",
         message: {
-            content: `<span class="move feelOut">feel out...</span>`,
+            content: `feel out...`,
         },
         attacker: attackerName,
         fightData,
